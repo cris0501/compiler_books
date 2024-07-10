@@ -1,0 +1,28 @@
+start: element+
+
+element: equation
+     | custom_note
+     | block
+     | block_math
+     | TEXT
+     | new_line
+
+equation: "$" TEXT "$"
+block_math: "$$" TEXT+ "$$"
+
+custom_note: "@" "note" "{" TEXT "|" content_note "}"
+
+content_note: (equation | TEXT | new_line)*
+
+block: "@" "block" "{" item+ "}"
+
+item: "@" "item" "{" (TEXT | equation | custom_note | new_line)+ "}"
+
+new_line: "@" "newline"
+
+TEXT: /[^<>{}$@|]+/
+
+%import common.WS
+%ignore WS
+
+IDENTIFIER: /[a-zA-Z][a-zA-Z0-9]*/
