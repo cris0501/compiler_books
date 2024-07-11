@@ -6,19 +6,25 @@ element: equation
      | block_math
      | TEXT
      | new_line
+     | order_list
+     | unorder_list
 
-equation: "$" TEXT "$"
+equation: "$" TEXT+ "$"
 block_math: "$$" TEXT+ "$$"
 
-note: "\\begin{note}{" TEXT "}" content_note+ "\\end{note}"
+note: "@note{" TEXT "}{" content_note+ "}"
 content_note: (equation | TEXT | new_line)*
 
-block: "\\begin{block}" item+ "\\end{block}"
-item: "\\begin{item}" (TEXT | equation | custom_note | new_line)+ "\\end{item}"
+block: "@begin{block}" item+ "@end{block}"
+item: "@item" (TEXT | equation | note | new_line)*
 
-new_line: "@" "newline"
+new_line: "\\newline" | "\\\\" | "@newline"
 
 TEXT: /[^<>{}$@|]+/
+
+order_list: "@begin{enumerate}" item_list+ "@end{enumerate}"
+unorder_list: "@begin{itemize}" item_list+ "@end{itemize}"
+item_list: "@item" (equation | TEXT | new_line | note | block_math)*
 
 %import common.WS
 %ignore WS

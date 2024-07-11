@@ -1,0 +1,22 @@
+Vamos a probar $x=10$ como primer parrafo este contenido con \note{recuerda}{cotenido de mi $nota$ con una ecuacion $7x=70$} \newline
+y aqui otra linea que mas adelante deberia ser posible pasarla a parrafo\\
+
+Nuevo parrafo el cual por ahora se comporta como linea con una $equation$\\
+
+$$ \int_0^1 x^2 dx $$
+
+\begin{enumerate}
+  \item Prueba de item y \note{titulo}{contenido}
+  \item Segunddo item que tiene $equation$
+\end{enumerate}
+
+\begin{itemize}
+  \item Prueba de item y \note{titulo}{contenido}
+  \item Segunddo item que tiene $equation$
+\end{itemize}
+
+
+\begin{block}
+  \item Texto con $equation$ Que muestra un div para tener contenido
+  \item Otro elemento \note{titulo}{Contenido anidado de notas $quation2$ con ecuaciones}
+\end{block}
