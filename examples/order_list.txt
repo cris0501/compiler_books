@@ -1,4 +1,4 @@
-Vamos a probar $x=10$ como primer parrafo este contenido con \note{recuerda}{cotenido de mi $nota$ con una ecuacion $7x=70$} \newline
+Vamos a probar $x=10$ como primer parrafo este contenido con \note{recuerda}{cotenido de mi $nota$ con una ecuacion $7x=70$}
 y aqui otra linea que mas adelante deberia ser posible pasarla a parrafo\\
 
 Nuevo parrafo el cual por ahora se comporta como linea con una $equation$\\

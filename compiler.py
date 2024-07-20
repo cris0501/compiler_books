@@ -23,7 +23,7 @@ content_note: (equation | TEXT | new_line)*
 block: "@begin{block}" item+ "@end{block}"
 item: "@item" (TEXT | equation | note | new_line)*
 
-new_line: "\\newline" | "\\\\" | "@newline"
+new_line: "@newline"
 
 TEXT: /[^<>{}$@|]+/
 
@@ -84,11 +84,14 @@ def compile_to_json(source_code):
   return tree
 
 def cleaner(source):
-    aux = source.replace("\\\\", "\\newline")
+    aux = source.replace("\\note", "@note")
+    aux = aux.replace("\\\\", "@newline")
+    aux = aux.replace("\\newline", "@newline")
     aux = aux.replace("\\begin", "@begin")
     aux = aux.replace("\\end", "@end")
-    aux = aux.replace("\\note", "@note")
     aux = aux.replace("\\item", "@item")
+    aux = aux.replace("\n", " ")
+    aux = aux.replace("\\n", " ")
     return aux
 
 if __name__ == "__main__":
