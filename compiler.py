@@ -20,7 +20,26 @@ closers = {
 }
 
 # Texto de entrada
-input = "texto texto \\section{\\def{$ texto $}} texto"
+input = "texto {texto \\section{\\def{$ texto $}} te}xto"
+
+# Función para leer y procesar mate
+def readMath(value, opener):
+    command_props = {
+        'name': 'math',
+        'type': 'inline'
+    }
+
+    current = index[-1]['node']  # Ultimo nodo al que se accede
+    new_node = {
+        'type': 'inline',
+        'name': 'math',
+        'content': []
+    }
+    current.append(new_node)  # Añadir el nuevo nodo al nodo actual
+    # Actualizar referencia al nuevo bloque con su delimitador
+    # Esto solo a bloques pues este sera el padre del contenido
+    index.append({'node': new_node['content'], 'closer': opener})
+    globalContext.append('math')  # Cambiar al contexto de comando
 
 # Función para leer y procesar un comando
 def readCommand(value, opener):
@@ -29,7 +48,7 @@ def readCommand(value, opener):
         print(f"Error: Comando no reconocido '{value}'")
         exit(0)
 
-    current = index[-1]['node']  # Nodo actual
+    current = index[-1]['node']  # Ultimo nodo al que se accede
     new_node = {
         'type': command_props['type'],
         'name': command_props['name'],
@@ -37,12 +56,26 @@ def readCommand(value, opener):
     }
     current.append(new_node)  # Añadir el nuevo nodo al nodo actual
     # Actualizar referencia al nuevo bloque con su delimitador
+    # Esto solo a bloques pues este sera el padre del contenido
     index.append({'node': new_node['content'], 'closer': closers[opener]})
     globalContext.append('command')  # Cambiar al contexto de comando
 
 # Función para manejar el cierre de bloques
+def closeMath(letter):
+    if not index:
+        print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
+        exit(0)
+
+    expected_closer = index[-1]['closer']
+    if expected_closer == letter:
+        index.pop()  # Eliminar la referencia actual (volver al nodo padre)
+        globalContext.pop()  # Salir del contexto actual
+    else:
+        print(f"Error: Delimitador de cierre inesperado '{letter}', se esperaba '{expected_closer}'")
+        exit(0)
+
+# Función para manejar el cierre de bloques
 def closeBlock(letter):
-    pprint.pprint(tree)  # Mostrar el árbol antes del error
     if not index:
         print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
         exit(0)
@@ -72,7 +105,7 @@ for letter in input:
         globalContext.append('command')  # Cambiar al contexto de comando
         newString = letter
     elif globalContext[-1] == 'command':
-        if letter in closers.keys():  # Validar si es un delimitador de apertura
+        if letter in ['{', '[']:  # Validar si es un delimitador de apertura
             if newString in commands:
                 readCommand(newString, letter)
                 newString = ''  # Vaciar para capturar nuevo contenido
@@ -82,11 +115,14 @@ for letter in input:
                 exit(0)
         else:
             newString += letter  # Acumula texto hasta encontrar un delimitador de apertura
-    elif letter in closers.keys() and globalContext[-1] == 'text':  # Inicio de bloque especial
-        index.append({'node': index[-1]['node'], 'closer': closers[letter]})
-        globalContext.append('math')  # Cambiar al contexto matemático
-    elif letter in closers.values() and globalContext[-1] == 'math':  # Cierre del bloque matemático
-        closeBlock(letter)  # Cerrar el bloque actual
+    elif letter in ['$', '$$'] and globalContext[-1] == 'text':  # Inicio de bloque especial
+        readMath(newString, letter)
+    elif letter in ['$', '$$'] and globalContext[-1] == 'math':  # Cierre del bloque matemático
+        expected_closer = index[-1]['closer']
+        if expected_closer == letter:
+            closeMath(letter)  # Cerrar el bloque actual
+        else:
+            newString += letter
     elif letter == ' ' and newString != '':  # Termina texto
         addText(newString)
         newString = ''  # Resetear después de procesar
@@ -94,5 +130,6 @@ for letter in input:
         newString += letter  # Acumula texto
 
 # Impresión del árbol resultante
+print(input)
 pprint.pprint(tree)
 
