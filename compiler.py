@@ -20,16 +20,11 @@ closers = {
 }
 
 # Texto de entrada
-input = "texto {texto \\section{\\def{$ texto $}} te}xto"
+input = "texto {texto \\section[\\def{$ 2x^{3y} $}] te}xto"
 
-# Función para leer y procesar mate
+# Función para leer y procesar bloques matemáticos
 def readMath(value, opener):
-    command_props = {
-        'name': 'math',
-        'type': 'inline'
-    }
-
-    current = index[-1]['node']  # Ultimo nodo al que se accede
+    current = index[-1]['node']  # Último nodo al que se accede
     new_node = {
         'type': 'inline',
         'name': 'math',
@@ -37,9 +32,8 @@ def readMath(value, opener):
     }
     current.append(new_node)  # Añadir el nuevo nodo al nodo actual
     # Actualizar referencia al nuevo bloque con su delimitador
-    # Esto solo a bloques pues este sera el padre del contenido
     index.append({'node': new_node['content'], 'closer': opener})
-    globalContext.append('math')  # Cambiar al contexto de comando
+    globalContext.append('math')  # Cambiar al contexto de matemáticas
 
 # Función para leer y procesar un comando
 def readCommand(value, opener):
@@ -48,7 +42,7 @@ def readCommand(value, opener):
         print(f"Error: Comando no reconocido '{value}'")
         exit(0)
 
-    current = index[-1]['node']  # Ultimo nodo al que se accede
+    current = index[-1]['node']  # Último nodo al que se accede
     new_node = {
         'type': command_props['type'],
         'name': command_props['name'],
@@ -56,25 +50,10 @@ def readCommand(value, opener):
     }
     current.append(new_node)  # Añadir el nuevo nodo al nodo actual
     # Actualizar referencia al nuevo bloque con su delimitador
-    # Esto solo a bloques pues este sera el padre del contenido
     index.append({'node': new_node['content'], 'closer': closers[opener]})
     globalContext.append('command')  # Cambiar al contexto de comando
 
-# Función para manejar el cierre de bloques
-def closeMath(letter):
-    if not index:
-        print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
-        exit(0)
-
-    expected_closer = index[-1]['closer']
-    if expected_closer == letter:
-        index.pop()  # Eliminar la referencia actual (volver al nodo padre)
-        globalContext.pop()  # Salir del contexto actual
-    else:
-        print(f"Error: Delimitador de cierre inesperado '{letter}', se esperaba '{expected_closer}'")
-        exit(0)
-
-# Función para manejar el cierre de bloques
+# Función para manejar el cierre de bloques generales (como \section, \def, etc.)
 def closeBlock(letter):
     if not index:
         print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
@@ -115,14 +94,16 @@ for letter in input:
                 exit(0)
         else:
             newString += letter  # Acumula texto hasta encontrar un delimitador de apertura
-    elif letter in ['$', '$$'] and globalContext[-1] == 'text':  # Inicio de bloque especial
-        readMath(newString, letter)
-    elif letter in ['$', '$$'] and globalContext[-1] == 'math':  # Cierre del bloque matemático
-        expected_closer = index[-1]['closer']
-        if expected_closer == letter:
-            closeMath(letter)  # Cerrar el bloque actual
-        else:
-            newString += letter
+    elif letter in [']', '}'] and letter == index[-1]['closer'] and globalContext[-1] == 'text':
+        closeBlock(letter)
+    elif letter in ['$', '$$']:
+        if globalContext[-1] == 'text':  # Inicio de bloque especial
+            readMath(newString, letter)
+        elif globalContext[-1] == 'math':  # Cierre del bloque matemático
+            if letter == index[-1]['closer']:
+                closeBlock(letter)  # Cerrar el bloque actual
+            else:
+                newString += letter
     elif letter == ' ' and newString != '':  # Termina texto
         addText(newString)
         newString = ''  # Resetear después de procesar
