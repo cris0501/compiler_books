@@ -4,32 +4,54 @@ import pprint
 tree = []  # Árbol global donde se almacena la estructura
 index = [{'node': tree, 'closer': None}]  # Pila de referencias con nodo y delimitador
 globalContext = 'text'  # Contexto global de lectura ('text' o 'command')
-commands = ['\\section', '\\def' , '$']  # Comandos que se pueden procesar
-closers = {  # Delimitadores de apertura y cierre para cada tipo de bloque
+
+# Diccionario de comandos con propiedades
+commands = {
+    '\\section': {'name': 'section', 'type': 'block'},
+    '\\def': {'name': 'definition', 'type': 'inline'}
+}
+
+# Delimitadores de apertura y cierre
+closers = {  
     '{': '}',
     '[': ']',
     '$$': '$$',
     '$': '$'
 }
-input = "texto texto \\section{\\def{ texto }} texto"  # Texto de entrada
+
+# Texto de entrada
+input = "texto texto \\section{\\def{$ texto $}} texto"
 
 # Función para leer y procesar un comando
-def readCommand(value, begin=None):
+def readCommand(value, opener):
+    command_props = commands.get(value)
+    if not command_props:
+        print(f"Error: Comando no reconocido '{value}'")
+        exit(0)
+
     current = index[-1]['node']  # Nodo actual
     new_node = {
-        'type': value,
+        'type': command_props['type'],
+        'name': command_props['name'],
         'content': []
     }
     current.append(new_node)  # Añadir el nuevo nodo al nodo actual
     # Actualizar referencia al nuevo bloque con su delimitador
-    index.append({'node': new_node['content'], 'closer': closers.get(begin)})
+    index.append({'node': new_node['content'], 'closer': closers[opener]})
 
 # Función para manejar el cierre de bloques
-def closeBlock():
-    if len(index) > 1:
+def closeBlock(letter):
+    if not index:
+        print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
+        exit(0)
+
+    expected_closer = index[-1]['closer']
+    if expected_closer == letter:
         index.pop()  # Eliminar la referencia actual (volver al nodo padre)
     else:
-        print("Error: No hay bloques para cerrar")  # Error si no hay bloque para cerrar
+        pprint.pprint(tree)
+        print(f"Error: Delimitador de cierre inesperado '{letter}', se esperaba '{expected_closer}'")
+        exit(0)
 
 # Función para agregar texto al nodo actual
 def addText(value):
@@ -48,25 +70,19 @@ for letter in input:
         globalContext = 'command'
         newString = letter
     elif globalContext == 'command':
-        if letter in ['{', '[']:  # Buscar en comandos si el bloque es válido
+        if letter in closers.keys():  # Validar si es un delimitador de apertura
             if newString in commands:
                 readCommand(newString, letter)
                 newString = ''  # Vaciar para capturar nuevo contenido
                 globalContext = 'text'
             else:
-                print("Error: Comando no reconocido")  # Error de comando
+                print(f"Error: Comando no reconocido '{newString}'")
                 exit(0)
         else:
-            newString += letter  # Acumula texto hasta encontrar '{' o '['
-    elif letter in ['}', ']']:  # Cierre de un bloque
-        # Verificar si el delimitador cierra correctamente el bloque
-        expected_closer = index[-1]['closer']
-        if expected_closer == letter:
-            closeBlock()  # Cerrar el bloque actual
-            globalContext = 'text'  # Volver al contexto de texto
-        else:
-            print(f"Error: Delimitador de cierre inesperado '{letter}'")
-            exit(0)
+            newString += letter  # Acumula texto hasta encontrar un delimitador de apertura
+    elif letter in closers.values():  # Validar si es un delimitador de cierre
+        closeBlock(letter)  # Cerrar el bloque actual
+        globalContext = 'text'  # Volver al contexto de texto
     elif letter == ' ' and newString != '':  # Termina texto
         addText(newString)
         newString = ''  # Resetear después de procesar
