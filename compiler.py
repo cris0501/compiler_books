@@ -1,107 +1,78 @@
-from lark import Lark, Transformer, Tree
-import sys
-import json
+import pprint
 
-grammar = """
-start: element+
+# Variables globales
+tree = []  # Árbol global donde se almacena la estructura
+index = [{'node': tree, 'closer': None}]  # Pila de referencias con nodo y delimitador
+globalContext = 'text'  # Contexto global de lectura ('text' o 'command')
+commands = ['\\section', '\\def' , '$']  # Comandos que se pueden procesar
+closers = {  # Delimitadores de apertura y cierre para cada tipo de bloque
+    '{': '}',
+    '[': ']',
+    '$$': '$$',
+    '$': '$'
+}
+input = "texto texto \\section{\\def{ texto }} texto"  # Texto de entrada
 
-element: equation
-     | note
-     | block
-     | block_math
-     | TEXT
-     | new_line
-     | order_list
-     | unorder_list
+# Función para leer y procesar un comando
+def readCommand(value, begin=None):
+    current = index[-1]['node']  # Nodo actual
+    new_node = {
+        'type': value,
+        'content': []
+    }
+    current.append(new_node)  # Añadir el nuevo nodo al nodo actual
+    # Actualizar referencia al nuevo bloque con su delimitador
+    index.append({'node': new_node['content'], 'closer': closers.get(begin)})
 
-equation: "$" TEXT+ "$"
-block_math: "$$" TEXT+ "$$"
+# Función para manejar el cierre de bloques
+def closeBlock():
+    if len(index) > 1:
+        index.pop()  # Eliminar la referencia actual (volver al nodo padre)
+    else:
+        print("Error: No hay bloques para cerrar")  # Error si no hay bloque para cerrar
 
-note: "@note{" TEXT "}{" content_note+ "}"
-content_note: (equation | TEXT | new_line)*
+# Función para agregar texto al nodo actual
+def addText(value):
+    current = index[-1]['node']  # Nodo actual
+    if current and isinstance(current[-1], str):
+        # Si el último elemento es texto, concatenar
+        current[-1] += ' '+value
+    else:
+        # Si no, agregar nuevo texto como un nuevo elemento
+        current.append(value)
 
-block: "@begin{block}" item+ "@end{block}"
-item: "@item" (TEXT | equation | note | new_line)*
+# Proceso de lectura del texto y comandos
+newString = ''
+for letter in input:
+    if newString == '' and letter == '\\':  # Inicia comando
+        globalContext = 'command'
+        newString = letter
+    elif globalContext == 'command':
+        if letter in ['{', '[']:  # Buscar en comandos si el bloque es válido
+            if newString in commands:
+                readCommand(newString, letter)
+                newString = ''  # Vaciar para capturar nuevo contenido
+                globalContext = 'text'
+            else:
+                print("Error: Comando no reconocido")  # Error de comando
+                exit(0)
+        else:
+            newString += letter  # Acumula texto hasta encontrar '{' o '['
+    elif letter in ['}', ']']:  # Cierre de un bloque
+        # Verificar si el delimitador cierra correctamente el bloque
+        expected_closer = index[-1]['closer']
+        if expected_closer == letter:
+            closeBlock()  # Cerrar el bloque actual
+            globalContext = 'text'  # Volver al contexto de texto
+        else:
+            print(f"Error: Delimitador de cierre inesperado '{letter}'")
+            exit(0)
+    elif letter == ' ' and newString != '':  # Termina texto
+        addText(newString)
+        newString = ''  # Resetear después de procesar
+    else:
+        newString += letter  # Acumula texto
 
-new_line: "@newline"
-
-TEXT: /[^<>{}$@|]+/
-
-order_list: "@begin{enumerate}" item_list+ "@end{enumerate}"
-unorder_list: "@begin{itemize}" item_list+ "@end{itemize}"
-item_list: "@item" (equation | TEXT | new_line | note | block_math)*
-
-%import common.WS
-%ignore WS
-
-IDENTIFIER: /[a-zA-Z][a-zA-Z0-9]*/
-"""
-
-class TreeToJSON(Transformer):
-  def start(self, items):
-    return {"type": "start", "content": items}
-
-  def element(self, items):
-    return items[0]
-
-  def equation(self, items):
-    return {"type": "equation", "content": items[0]}
-
-  def note(self, items):
-    title, content = items
-    return {"type": "note", "title": title, "content": content}
-
-  def content_note(self, items):
-    return {"type": "content_note", "content": items}
-
-  def block(self, items):
-    return {"type": "block", "items": items}
-
-  def block_math(self, items):
-    return {"type": "block_math", "content": items}
-
-  def item(self, items):
-    return {"type": "item", "content": items}
-
-  def new_line(self, items):
-    return {"type": "new_line"}
-
-  def TEXT(self, items):
-    return {"type": "text", "content": items}
-
-  def order_list(self, items):
-    return {"type": "order_list", "content": items}
-
-  def unorder_list(self, items):
-    return {"type": "unorder_list", "content": items}
-
-  def item_list(self, items):
-    return {"type": "item_list", "content": items}
-
-def compile_to_json(source_code):
-  parser = Lark(grammar, parser='lalr', transformer=TreeToJSON())
-  tree = parser.parse(source_code)
-  return tree
-
-def cleaner(source):
-    aux = source.replace("\\note", "@note")
-    aux = aux.replace("\\\\", "@newline")
-    aux = aux.replace("\\newline", "@newline")
-    aux = aux.replace("\\begin", "@begin")
-    aux = aux.replace("\\end", "@end")
-    aux = aux.replace("\\item", "@item")
-    aux = aux.replace("\n", " ")
-    aux = aux.replace("\\n", " ")
-    return aux
-
-if __name__ == "__main__":
-  with open(sys.argv[1], "r") as file:
-    source_code = file.read()
-  
-  source_code = cleaner(source_code)
-
-  json_data = compile_to_json(source_code)
-  with open("output.json", "w") as file:
-    json.dump(json_data, file, indent=4)
-  print("Compilation successful.")
+# Impresión del árbol resultante
+pprint.pprint(tree)
 
