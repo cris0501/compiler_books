@@ -25,8 +25,9 @@ input = "texto {texto \\section[\\def{$ 2x^{3y} $}] te}xto"
 # Función para leer y procesar bloques matemáticos
 def readMath(value, opener):
     current = index[-1]['node']  # Último nodo al que se accede
+    type_ = 'inline' if opener=='$' else 'block'
     new_node = {
-        'type': 'inline',
+        'type': type_,
         'name': 'math',
         'content': []
     }
