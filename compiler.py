@@ -1,3 +1,4 @@
+import sys
 import pprint
 
 # Variables globales
@@ -18,6 +19,14 @@ closers = {
     '$': '$'
 }
 
+# Funcion para agregar nodo
+def addNode(current, node):
+    """Agrega el nodo al arbol o al contenido de otro nodo"""
+    if current is tree:
+        current.append(node)
+    else:
+        current['content'].append(node)
+
 # Funciones auxiliares
 def handle_math_opener(opener):
     """Gestiona la apertura de bloques matemáticos."""
@@ -28,7 +37,7 @@ def handle_math_opener(opener):
         'name': 'math',
         'content': []
     }
-    current['content'].append(new_node)
+    addNode(current, new_node)
     index.append({'node': new_node, 'context': 'math', 'closer': opener, 'parameters': False})
 
 def handle_command(command, opener):
@@ -47,10 +56,7 @@ def handle_command(command, opener):
         'parameters': [],
         'content': []
     }
-    if current is tree:
-        current.append(new_node)
-    else:
-        current['content'].append(new_node)
+    addNode(current, new_node)
 
     context_ = 'parameter' if params else 'content'
     index.append({
@@ -81,28 +87,41 @@ def add_text(value):
     current = index[-1]
     current_node = current['node']
 
-    if current['context'] == 'parameter':
+    if current['context'] in ['text', 'math']:
+        addNode(current_node, value)
+    elif current['context'] == 'parameter' and value != '':
         current_node["parameters"].append(value)
     else:
         if current_node['content'] and isinstance(current_node['content'][-1], str):
             current_node['content'][-1] += ' ' + value
         else:
-            current_node['content'].append(value)
+            addNode(current_node, value)
 
 # Texto de entrada
-input = "\\def{t}{\\section{cuerpo} $$ x + y $$}"
+input_ = ''
+# input_ = "\\def{t}{\\section{cuerpo} $$ x + y $$}"
+# Abrir y leer el archivo línea por línea
+file_path = sys.argv[1] if len(sys.argv) > 1 else 'test.tex'  # Reemplaza con la ruta de tu archivo
+print(f"{file_path}")
+with open(file_path, 'r') as file:
+    for line in file:
+        line = line.strip()  # Eliminar saltos de línea y espacios innecesarios
+        input_ += line + ' '  # Agregar un espacio para separar líneas
 
 # Proceso de lectura del texto y comandos
 newString = ''
 math_opener = ''
 skip_next = False # Para $$
-for i, letter in enumerate(input):
-    next_char = input[i + 1] if i + 1 < len(input) else ''
+for i, letter in enumerate(input_):
+    next_char = input_[i + 1] if i + 1 < len(input_) else ''
     if skip_next:
         skip_next = False
         continue
 
     if letter in ['{', '[']:
+        if index[-1]['context'] == 'math':
+            newString += letter
+            continue
         if newString:  # Es un comando
             handle_command(newString, letter)
             newString = ''
@@ -112,13 +131,18 @@ for i, letter in enumerate(input):
             print(f"Error: Comando vacío antes de '{letter}'")
             exit(0)
     elif letter in ['}', ']']:
+        if index[-1]['context'] == 'math':
+            newString += letter
+            continue
         add_text(newString)
         close_block(letter)
         newString = ''
     elif letter == '$':
         math_opener = '$$' if next_char == '$' else '$'
         if index[-1]['context'] == 'math':
+            add_text(newString)
             close_block(math_opener)
+            newString = ''
         else:
             handle_math_opener(math_opener)
         if math_opener == '$$': skip_next = True
@@ -136,6 +160,6 @@ if newString:
     add_text(newString)
 
 # Impresión del árbol resultante
-print(input)
+print(input_)
 pprint.pprint(tree)
 
