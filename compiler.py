@@ -101,7 +101,7 @@ def add_text(value):
 input_ = ''
 # input_ = "\\def{t}{\\section{cuerpo} $$ x + y $$}"
 # Abrir y leer el archivo línea por línea
-file_path = sys.argv[1] if len(sys.argv) > 1 else 'test.tex'  # Reemplaza con la ruta de tu archivo
+file_path = sys.argv[1] if len(sys.argv) > 1 else 'examples/test.tex'  # Reemplaza con la ruta de tu archivo
 print(f"{file_path}")
 with open(file_path, 'r') as file:
     for line in file:
