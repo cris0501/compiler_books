@@ -20,7 +20,7 @@ closers = {
 }
 
 # Texto de entrada
-input = "texto {texto \\section[\\def{$ 2x^{3y} $}] te}xto"
+input = "texto {texto \\section[\\def{$$ 2x^{3y} $$}] te}xto"
 
 # Función para leer y procesar bloques matemáticos
 def readMath(value, opener):
@@ -80,8 +80,26 @@ def addText(value):
 
 # Proceso de lectura del texto y comandos
 newString = ''
-for letter in input:
-    if newString == '' and letter == '\\':  # Inicia comando
+i = 0  # Índice de la posición actual en la cadena
+while i < len(input):
+    letter = input[i]
+
+    # Detectar apertura de bloques matemáticos
+    if letter == '$':
+        next_letter = input[i + 1] if i + 1 < len(input) else None
+        if next_letter == '$':  # Bloque matemático tipo $$
+            if globalContext[-1] == 'text':  # Inicio de bloque matemático
+                readMath(newString, '$$')
+                i += 1  # Saltar el segundo '$' del '$$'
+            elif globalContext[-1] == 'math' and index[-1]['closer'] == '$$':  # Cierre del bloque matemático tipo $$
+                closeBlock('$$')
+                i += 1  # Saltar el segundo '$' del '$$'
+        else:  # Bloque matemático tipo $
+            if globalContext[-1] == 'text':  # Inicio de bloque matemático
+                readMath(newString, '$')
+            elif globalContext[-1] == 'math' and index[-1]['closer'] == '$':  # Cierre del bloque matemático tipo $
+                closeBlock('$')
+    elif newString == '' and letter == '\\':  # Inicia comando
         globalContext.append('command')  # Cambiar al contexto de comando
         newString = letter
     elif globalContext[-1] == 'command':
@@ -97,19 +115,13 @@ for letter in input:
             newString += letter  # Acumula texto hasta encontrar un delimitador de apertura
     elif letter in [']', '}'] and letter == index[-1]['closer'] and globalContext[-1] == 'text':
         closeBlock(letter)
-    elif letter in ['$', '$$']:
-        if globalContext[-1] == 'text':  # Inicio de bloque especial
-            readMath(newString, letter)
-        elif globalContext[-1] == 'math':  # Cierre del bloque matemático
-            if letter == index[-1]['closer']:
-                closeBlock(letter)  # Cerrar el bloque actual
-            else:
-                newString += letter
     elif letter == ' ' and newString != '':  # Termina texto
         addText(newString)
         newString = ''  # Resetear después de procesar
     else:
         newString += letter  # Acumula texto
+
+    i += 1  # Avanzar al siguiente carácter
 
 # Impresión del árbol resultante
 print(input)
