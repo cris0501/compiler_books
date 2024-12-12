@@ -2,126 +2,138 @@ import pprint
 
 # Variables globales
 tree = []  # Árbol global donde se almacena la estructura
-index = [{'node': tree, 'closer': None}]  # Pila de referencias con nodo y delimitador
-globalContext = ['text']  # Pila de contextos de lectura ('text', 'command', 'math')
+index = [{'node': tree, 'context': 'text', 'closer': None, 'parameters': False}]  # Pila de referencias con nodo y delimitador
 
 # Diccionario de comandos con propiedades
 commands = {
-    '\\section': {'name': 'section', 'type': 'block'},
-    '\\def': {'name': 'definition', 'type': 'inline'}
+    '\\section': {'name': 'section', 'type': 'block', 'parameters': False},
+    '\\def': {'name': 'definition', 'type': 'inline', 'parameters': True}
 }
 
 # Delimitadores de apertura y cierre
-closers = {  
+closers = {
     '{': '}',
     '[': ']',
     '$$': '$$',
     '$': '$'
 }
 
-# Texto de entrada
-input = "texto {texto \\section[\\def{$$ 2x^{3y} $$}] te}xto"
-
-# Función para leer y procesar bloques matemáticos
-def readMath(value, opener):
-    current = index[-1]['node']  # Último nodo al que se accede
-    type_ = 'inline' if opener=='$' else 'block'
+# Funciones auxiliares
+def handle_math_opener(opener):
+    """Gestiona la apertura de bloques matemáticos."""
+    current = index[-1]['node']
+    type_ = 'inline' if opener == '$' else 'block'
     new_node = {
         'type': type_,
         'name': 'math',
         'content': []
     }
-    current.append(new_node)  # Añadir el nuevo nodo al nodo actual
-    # Actualizar referencia al nuevo bloque con su delimitador
-    index.append({'node': new_node['content'], 'closer': opener})
-    globalContext.append('math')  # Cambiar al contexto de matemáticas
+    current['content'].append(new_node)
+    index.append({'node': new_node, 'context': 'math', 'closer': opener, 'parameters': False})
 
-# Función para leer y procesar un comando
-def readCommand(value, opener):
-    command_props = commands.get(value)
+def handle_command(command, opener):
+    """Procesa comandos reconocidos y crea nuevos nodos."""
+    command_props = commands.get(command)
+    params = command_props.get('parameters')
+
     if not command_props:
-        print(f"Error: Comando no reconocido '{value}'")
+        print(f"Error: Comando no reconocido '{command}'")
         exit(0)
 
-    current = index[-1]['node']  # Último nodo al que se accede
+    current = index[-1]['node']
     new_node = {
         'type': command_props['type'],
         'name': command_props['name'],
+        'parameters': [],
         'content': []
     }
-    current.append(new_node)  # Añadir el nuevo nodo al nodo actual
-    # Actualizar referencia al nuevo bloque con su delimitador
-    index.append({'node': new_node['content'], 'closer': closers[opener]})
-    globalContext.append('command')  # Cambiar al contexto de comando
+    if current is tree:
+        current.append(new_node)
+    else:
+        current['content'].append(new_node)
 
-# Función para manejar el cierre de bloques generales (como \section, \def, etc.)
-def closeBlock(letter):
+    context_ = 'parameter' if params else 'content'
+    index.append({
+        'node': new_node,
+        'context': context_,
+        'parameters': params,
+        'closer': closers.get(opener)
+    })
+
+def close_block(letter):
+    """Cierra un bloque de acuerdo al delimitador esperado."""
     if not index:
         print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
         exit(0)
 
     expected_closer = index[-1]['closer']
     if expected_closer == letter:
-        index.pop()  # Eliminar la referencia actual (volver al nodo padre)
-        globalContext.pop()  # Salir del contexto actual
+        if index[-1]['context'] == 'parameter':
+            index[-1]['context'] = 'content'
+        else:
+            index.pop()
     else:
         print(f"Error: Delimitador de cierre inesperado '{letter}', se esperaba '{expected_closer}'")
         exit(0)
 
-# Función para agregar texto al nodo actual
-def addText(value):
-    current = index[-1]['node']  # Nodo actual
-    if current and isinstance(current[-1], str):
-        # Si el último elemento es texto, concatenar
-        current[-1] += ' ' + value
+def add_text(value):
+    """Agrega texto al nodo actual."""
+    current = index[-1]
+    current_node = current['node']
+
+    if current['context'] == 'parameter':
+        current_node["parameters"].append(value)
     else:
-        # Si no, agregar nuevo texto como un nuevo elemento
-        current.append(value)
+        if current_node['content'] and isinstance(current_node['content'][-1], str):
+            current_node['content'][-1] += ' ' + value
+        else:
+            current_node['content'].append(value)
+
+# Texto de entrada
+input = "\\def{t}{\\section{cuerpo} $$ x + y $$}"
 
 # Proceso de lectura del texto y comandos
 newString = ''
-i = 0  # Índice de la posición actual en la cadena
-while i < len(input):
-    letter = input[i]
+math_opener = ''
+skip_next = False # Para $$
+for i, letter in enumerate(input):
+    next_char = input[i + 1] if i + 1 < len(input) else ''
+    if skip_next:
+        skip_next = False
+        continue
 
-    # Detectar apertura de bloques matemáticos
-    if letter == '$':
-        next_letter = input[i + 1] if i + 1 < len(input) else None
-        if next_letter == '$':  # Bloque matemático tipo $$
-            if globalContext[-1] == 'text':  # Inicio de bloque matemático
-                readMath(newString, '$$')
-                i += 1  # Saltar el segundo '$' del '$$'
-            elif globalContext[-1] == 'math' and index[-1]['closer'] == '$$':  # Cierre del bloque matemático tipo $$
-                closeBlock('$$')
-                i += 1  # Saltar el segundo '$' del '$$'
-        else:  # Bloque matemático tipo $
-            if globalContext[-1] == 'text':  # Inicio de bloque matemático
-                readMath(newString, '$')
-            elif globalContext[-1] == 'math' and index[-1]['closer'] == '$':  # Cierre del bloque matemático tipo $
-                closeBlock('$')
-    elif newString == '' and letter == '\\':  # Inicia comando
-        globalContext.append('command')  # Cambiar al contexto de comando
-        newString = letter
-    elif globalContext[-1] == 'command':
-        if letter in ['{', '[']:  # Validar si es un delimitador de apertura
-            if newString in commands:
-                readCommand(newString, letter)
-                newString = ''  # Vaciar para capturar nuevo contenido
-                globalContext[-1] = 'text'  # Volver al contexto de texto
-            else:
-                print(f"Error: Comando no reconocido '{newString}'")
-                exit(0)
+    if letter in ['{', '[']:
+        if newString:  # Es un comando
+            handle_command(newString, letter)
+            newString = ''
+        elif index[-1]['parameters']: # Tiene param y esta justo en el cambio
+            continue # No se crea nodo y tampoco error de vacio
         else:
-            newString += letter  # Acumula texto hasta encontrar un delimitador de apertura
-    elif letter in [']', '}'] and letter == index[-1]['closer'] and globalContext[-1] == 'text':
-        closeBlock(letter)
-    elif letter == ' ' and newString != '':  # Termina texto
-        addText(newString)
-        newString = ''  # Resetear después de procesar
+            print(f"Error: Comando vacío antes de '{letter}'")
+            exit(0)
+    elif letter in ['}', ']']:
+        add_text(newString)
+        close_block(letter)
+        newString = ''
+    elif letter == '$':
+        math_opener = '$$' if next_char == '$' else '$'
+        if index[-1]['context'] == 'math':
+            close_block(math_opener)
+        else:
+            handle_math_opener(math_opener)
+        if math_opener == '$$': skip_next = True
+        math_opener = ''
+    elif letter == ' ' and newString:
+        add_text(newString)
+        newString = ''
+    elif letter == ' ':
+        continue # Elimina el espacio en '$ tex'
     else:
-        newString += letter  # Acumula texto
+        newString += letter
 
-    i += 1  # Avanzar al siguiente carácter
+# Procesar cualquier texto restante
+if newString:
+    add_text(newString)
 
 # Impresión del árbol resultante
 print(input)
