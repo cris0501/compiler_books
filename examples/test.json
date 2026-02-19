@@ -1,0 +1,757 @@
+{
+    "type": "start",
+    "content": [
+        {
+            "type": "text",
+            "content": "El teorema de Cantor-Berstein asegura que si "
+        },
+        {
+            "type": "equation",
+            "content": "X \\sim Y_1 \\subset Y"
+        },
+        {
+            "type": "text",
+            "content": "y "
+        },
+        {
+            "type": "equation",
+            "content": "Y \\sim X_1 \\subset X"
+        },
+        {
+            "type": "text",
+            "content": ", entonces "
+        },
+        {
+            "type": "equation",
+            "content": "X \\sim Y"
+        },
+        {
+            "type": "text",
+            "content": ". "
+        },
+        {
+            "type": "new_line"
+        },
+        {
+            "type": "block",
+            "items": [
+                {
+                    "type": "item",
+                    "content": [
+                        {
+                            "type": "text",
+                            "content": "Dem: Basta probar que existe un funcion     "
+                        },
+                        {
+                            "type": "note",
+                            "title": {
+                                "type": "text",
+                                "content": "biyectiva"
+                            },
+                            "content": {
+                                "type": "content_note",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "content": "Una funcion "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "f"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "se dice biyeccion si es inyectiva y suprayectiva.     "
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h:X \\to Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Para esto podemos usar las propiedades de las funciones     "
+                        },
+                        {
+                            "type": "note",
+                            "title": {
+                                "type": "text",
+                                "content": "inyectivas"
+                            },
+                            "content": {
+                                "type": "content_note",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "content": "Una funcion "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "f"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "se dice inyectiva si: "
+                                    },
+                                    {
+                                        "type": "new_line"
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "f(x)=f(y) \\; \\Rightarrow \\; x=y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Para ello, definimos las funciones "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f: X \\to Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g: Y \\to X"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", ambas funciones inyectivas.      Antes de definir la funcion "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", debemos definir dos conjuntos fundamentales, estos son "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_\\infty"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", este conjunto contiene todos los elementos de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X"
+                        },
+                        {
+                            "type": "text",
+                            "content": "los cuales no son preimagen de algun elemento de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", es decir, elementos que no estan asociados a un elemento en "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "por la funcion "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", ie:     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "X_\\infty = X \\backslash \\bigcup_{n=0}^\\infty g^n(x)     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "donde "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_0 = X"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Tambien, definimos el complemento de este conjunto, "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_1"
+                        },
+                        {
+                            "type": "text",
+                            "content": "el cual contiene a todos los elementos que si estan asociados a un elemento de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "mediante la funcion "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", ie:     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "X_1 = X \\backslash X_\\infty     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "Estos conjuntos son disjuntos entre si.       "
+                        },
+                        {
+                            "type": "image",
+                            "style": {
+                                "type": "text",
+                                "content": "30"
+                            },
+                            "url": {
+                                "type": "text",
+                                "content": "/books/1.jpg"
+                            },
+                            "content": {
+                                "type": "content",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "content": "Los colores en el grafico corresponden a los elementos relacionados segun la definicion de las funciones "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "f"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "y"
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "g"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": ". "
+                                    },
+                                    {
+                                        "type": "new_line"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "En algunos libros dibulgativos se hace una analogia donde "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "X_\\infty"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "son los elementos huerfanos de "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "X"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "debido a que son los elementos que no son pre-imagen de algun elemento en "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "Y"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": ". De igual forma, se crean conjuntos de elementos padres, aquellos que si tienen una imagen en el conjunto codominio correspondiente a cada funcion asi como el conjunto de abuelos, etc.     "
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "content": "Ahora, construyamos una funcion "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h: X \\to Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "definida de la siguiente forma:     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "Si\\;\\;x \\in X_\\infty\\;\\Rightarrow h(x)=f(x)     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "Si\\;\\;x \\in X_1\\;\\Rightarrow h(x)=g^{-1}(x)     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "y procedemos a probar que dicha funcion es una biyeccion entre "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Para ello, notemos que dicha funcion es inyectiva por la definicion de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", puesto que cada elemento de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_1"
+                        },
+                        {
+                            "type": "text",
+                            "content": "esta relacionado a un unico elementto "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "y \\in Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "puesto que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es por deficion inyectiva. De manera analoga ocurre con "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Luego "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es inyectiva. "
+                        },
+                        {
+                            "type": "new_line"
+                        },
+                        {
+                            "type": "text",
+                            "content": "Ahora, para probar que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es     "
+                        },
+                        {
+                            "type": "note",
+                            "title": {
+                                "type": "text",
+                                "content": "suprayectiva"
+                            },
+                            "content": {
+                                "type": "content_note",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "content": "Una funncion "
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "f:X\\to Y"
+                                    },
+                                    {
+                                        "type": "text",
+                                        "content": "se dice que es suprayectiva si: "
+                                    },
+                                    {
+                                        "type": "new_line"
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "\\forall y \\in Y;\\;\\exists x\\in X \\mid f(x)=y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "content": ", podemos notar que todos los elementos de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "son mapeados puesto que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "\\forall\\; x \\in X\\; \\exists ! y \\in Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "tal que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f(x) = y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", por otro lado, por la definicion de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": "tenemos que todos los elementos de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f"
+                        },
+                        {
+                            "type": "text",
+                            "content": "tambien son mapeados por "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", de igual forma ocurre con los elementos de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Por lo que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "h"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es suprayectiva. "
+                        },
+                        {
+                            "type": "new_line"
+                        },
+                        {
+                            "type": "equation",
+                            "content": "\\therefore \\; h"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es una biyeccion y tenemos entonces que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X \\sim Y"
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "content": [
+                        {
+                            "type": "text",
+                            "content": "Dem: Sean "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f:X \\to Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g:Y \\to X"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", ambas funciones inyectivas. Se tiene entonces que     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "f(X) = Y_1     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "donde "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y_1 \\subset Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". De esta forma "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "g"
+                        },
+                        {
+                            "type": "text",
+                            "content": "esta definida en "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y_1"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", tal que     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "X_2 = g(Y_1) = g(f(X))     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "pero como "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f"
+                        },
+                        {
+                            "type": "text",
+                            "content": "es inyectiva se tiene que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "\\forall x \\in X, \\exists ! y \\in Y \\mid f(x)=y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ", esto a su vez significa que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X \\sim Y_1"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Analogamente se puede usar un argumento similar tal que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y_1 \\sim X_2"
+                        },
+                        {
+                            "type": "text",
+                            "content": "por lo que por     "
+                        },
+                        {
+                            "type": "note",
+                            "title": {
+                                "type": "text",
+                                "content": "transitividad"
+                            },
+                            "content": {
+                                "type": "content_note",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "content": "Es decir que si "
+                                    },
+                                    {
+                                        "type": "new_line"
+                                    },
+                                    {
+                                        "type": "equation",
+                                        "content": "xRy \\wedge yRz \\Rightarrow xRz"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X \\sim X_2"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". De forma similar se puede verificar que "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y \\sim Y_2 \\subset Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y continuando con este proceso podemos construir una susecion de subconjuntos     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "(X_n)_{n=0}^{\\infty} \\;\\wedge\\; (Y_n)_{n=0}^{\\infty}     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "donde "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_0 = X"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y_0 = Y"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". Esta sucesion de conjuntos se puede definir mediante     "
+                        },
+                        {
+                            "type": "block_math",
+                            "content": "X_{n+1} = f(Y_n) \\wedge Y_{n+1} = g(X_n)     "
+                        },
+                        {
+                            "type": "text",
+                            "content": "lo que genera una cadena de conjuntos anidados "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "X_{n+1} \\subset X_n"
+                        },
+                        {
+                            "type": "text",
+                            "content": "y "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "Y_{n+1} \\subset Y_n"
+                        },
+                        {
+                            "type": "text",
+                            "content": ". "
+                        },
+                        {
+                            "type": "new_line"
+                        },
+                        {
+                            "type": "text",
+                            "content": "Recurriendo nuevamente a la inyectividad de "
+                        },
+                        {
+                            "type": "equation",
+                            "content": "f"
+                        },
+                        {
+                            "type": "alert",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "content": "Esta demostracion no esta finalizada"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "content": "La demostracion de este teorema es de gran relevancia ya que teniendo un criterio para determinar si dos conjuntos tienen la misma cardinalidad nos permite entonces establecer una relacion de  "
+        },
+        {
+            "type": "note",
+            "title": {
+                "type": "text",
+                "content": "orden total no estricto"
+            },
+            "content": {
+                "type": "content_note",
+                "content": [
+                    {
+                        "type": "text",
+                        "content": "Una relacion de orden total no estricto es aquella relacion en la que se cuenta con la tricotomia y tambien con las propiedades de un orden parcial, es decir, es reflexiva, antisimetrica y finalmente, transitiva. "
+                    }
+                ]
+            }
+        },
+        {
+            "type": "text",
+            "content": "entre los numeros cardinales, es decir, podemos comparar dichas cardinalidades, tambien se mostrara mas adelante, que "
+        },
+        {
+            "type": "equation",
+            "content": "\\delta(N) < \\delta(R)"
+        },
+        {
+            "type": "text",
+            "content": "entre otros resultados importantes. "
+        }
+    ]
+}

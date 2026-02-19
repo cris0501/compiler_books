@@ -1,165 +1,307 @@
+import re
 import sys
-import pprint
+import json
 
-# Variables globales
-tree = []  # Árbol global donde se almacena la estructura
-index = [{'node': tree, 'context': 'text', 'closer': None, 'parameters': False}]  # Pila de referencias con nodo y delimitador
+# ─── 1. Tokenizer ────────────────────────────────────────────────────────────
 
-# Diccionario de comandos con propiedades
-commands = {
-    '\\section': {'name': 'section', 'type': 'block', 'parameters': False},
-    '\\def': {'name': 'definition', 'type': 'inline', 'parameters': True}
+TOKEN_SPECS = [
+    ('MATH_BLOCK',    r'\$\$'),          # $$ antes que $ para que matchee primero
+    ('MATH_INLINE',   r'\$'),
+    ('COMMAND',       r'\\[a-zA-Z]+'),   # \section, \def, \newline ...
+    ('OPEN_BRACE',    r'\{'),
+    ('CLOSE_BRACE',   r'\}'),
+    ('OPEN_BRACKET',  r'\['),
+    ('CLOSE_BRACKET', r'\]'),
+    ('WHITESPACE',    r'[ \t\n]+'),
+    ('TEXT',          r'[^\\$\{\}\[\]\s]+'),
+]
+
+MASTER_RE = re.compile(
+    '|'.join(f'(?P<{name}>{pat})' for name, pat in TOKEN_SPECS)
+)
+
+def tokenize(src: str) -> list[tuple[str, str]]:
+    return [(m.lastgroup, m.group()) for m in MASTER_RE.finditer(src)]
+
+
+# ─── 2. Registro de comandos ─────────────────────────────────────────────────
+# Para agregar un comando nuevo: solo añadir una entrada aquí.
+
+COMMANDS = {
+    '\\section':    {'name': 'section',    'type': 'block',  'params': False},
+    '\\subsection': {'name': 'subsection', 'type': 'block',  'params': False},
+    '\\def':        {'name': 'definition', 'type': 'inline', 'params': True},
+    '\\textbf':     {'name': 'bold',       'type': 'inline', 'params': False},
+    '\\textit':     {'name': 'italic',     'type': 'inline', 'params': False},
+    '\\newline':    {'name': 'newline',    'type': 'inline', 'params': False, 'self_closing': True},
+    '\\n':          {'name': 'newline',    'type': 'inline', 'params': False, 'self_closing': True},
 }
 
-# Delimitadores de apertura y cierre
-closers = {
-    '{': '}',
-    '[': ']',
-    '$$': '$$',
-    '$': '$'
-}
 
-# Funcion para agregar nodo
-def addNode(current, node):
-    """Agrega el nodo al arbol o al contenido de otro nodo"""
-    if current is tree:
-        current.append(node)
-    else:
-        current['content'].append(node)
+# ─── 3. Parser ───────────────────────────────────────────────────────────────
 
-# Funciones auxiliares
-def handle_math_opener(opener):
-    """Gestiona la apertura de bloques matemáticos."""
-    current = index[-1]['node']
-    type_ = 'inline' if opener == '$' else 'block'
-    new_node = {
-        'type': type_,
-        'name': 'math',
-        'content': []
-    }
-    addNode(current, new_node)
-    index.append({'node': new_node, 'context': 'math', 'closer': opener, 'parameters': False})
+class Parser:
+    def __init__(self, tokens: list[tuple[str, str]]):
+        self.tokens = tokens
+        self.pos = 0
+        self.tree: list = []
+        # Cada frame: {node, context ('root'|'content'|'parameter'), closer}
+        self.stack = [{'node': self.tree, 'context': 'root', 'closer': None}]
 
-def handle_command(command, opener):
-    """Procesa comandos reconocidos y crea nuevos nodos."""
-    command_props = commands.get(command)
-    params = command_props.get('parameters')
+    @property
+    def frame(self): return self.stack[-1]
 
-    if not command_props:
-        print(f"Error: Comando no reconocido '{command}'")
-        exit(0)
+    def consume(self) -> tuple[str, str]:
+        tok = self.tokens[self.pos]; self.pos += 1; return tok
 
-    current = index[-1]['node']
-    new_node = {
-        'type': command_props['type'],
-        'name': command_props['name'],
-        'parameters': [],
-        'content': []
-    }
-    addNode(current, new_node)
+    def skip_whitespace(self):
+        while self.pos < len(self.tokens) and self.tokens[self.pos][0] == 'WHITESPACE':
+            self.pos += 1
 
-    context_ = 'parameter' if params else 'content'
-    index.append({
-        'node': new_node,
-        'context': context_,
-        'parameters': params,
-        'closer': closers.get(opener)
-    })
+    def expect(self, kind: str) -> str:
+        self.skip_whitespace()
+        if self.pos >= len(self.tokens):
+            raise SyntaxError(f"Fin de archivo inesperado, se esperaba {kind}")
+        tok_kind, tok_val = self.consume()
+        if tok_kind != kind:
+            raise SyntaxError(f"Se esperaba {kind}, se encontró {tok_kind!r} ({tok_val!r})")
+        return tok_val
 
-def close_block(letter):
-    """Cierra un bloque de acuerdo al delimitador esperado."""
-    if not index:
-        print(f"Error: Intento de cerrar bloque sin apertura previa '{letter}'")
-        exit(0)
+    def target(self) -> list:
+        node = self.frame['node']
+        return node if isinstance(node, list) else node['content']
 
-    expected_closer = index[-1]['closer']
-    if expected_closer == letter:
-        if index[-1]['context'] == 'parameter':
-            index[-1]['context'] = 'content'
+    def add_node(self, node):
+        target = self.target()
+        if isinstance(node, str):
+            text = node.strip()
+            if not text: return
+            # Texto consecutivo se fusiona en un solo string
+            if target and isinstance(target[-1], str):
+                target[-1] += ' ' + text
+            else:
+                target.append(text)
         else:
-            index.pop()
-    else:
-        print(f"Error: Delimitador de cierre inesperado '{letter}', se esperaba '{expected_closer}'")
-        exit(0)
+            target.append(node)
 
-def add_text(value):
-    """Agrega texto al nodo actual."""
-    current = index[-1]
-    current_node = current['node']
+    # ── Handlers ─────────────────────────────────────────────────────────────
 
-    if current['context'] in ['text', 'math']:
-        addNode(current_node, value)
-    elif current['context'] == 'parameter' and value != '':
-        current_node["parameters"].append(value)
-    else:
-        if current_node['content'] and isinstance(current_node['content'][-1], str):
-            current_node['content'][-1] += ' ' + value
+    def _skip_brace_args(self):
+        """Consume any {…} argument blocks that follow an unknown command."""
+        while True:
+            pos = self.pos
+            while pos < len(self.tokens) and self.tokens[pos][0] == 'WHITESPACE':
+                pos += 1
+            if pos >= len(self.tokens) or self.tokens[pos][0] != 'OPEN_BRACE':
+                break
+            self.pos = pos + 1  # skip opening {
+            depth = 1
+            while self.pos < len(self.tokens) and depth > 0:
+                kind, _ = self.tokens[self.pos]
+                if kind == 'OPEN_BRACE':
+                    depth += 1
+                elif kind == 'CLOSE_BRACE':
+                    depth -= 1
+                self.pos += 1
+
+    def on_command(self, cmd: str):
+        props = COMMANDS.get(cmd)
+        if props is None:
+            print(f"Warning: comando desconocido '{cmd}'", file=sys.stderr)
+            self._skip_brace_args()
+            return
+
+        if props.get('self_closing'):
+            self.add_node({'type': props['type'], 'name': props['name']})
+            return
+
+        new_node = {'type': props['type'], 'name': props['name'], 'content': []}
+        if props['params']:
+            new_node['parameters'] = []
+
+        self.add_node(new_node)
+
+        # Bloque de parámetros (ej: \def{param}{content})
+        if props['params']:
+            self.expect('OPEN_BRACE')
+            self.stack.append({'node': new_node, 'context': 'parameter', 'closer': '}'})
+            depth = len(self.stack)
+            while self.pos < len(self.tokens) and len(self.stack) >= depth:
+                self._step()
+
+        # Bloque de contenido
+        self.expect('OPEN_BRACE')
+        self.stack.append({'node': new_node, 'context': 'content', 'closer': '}'})
+
+    def on_math(self, opener: str):
+        type_ = 'block' if opener == '$$' else 'inline'
+        # El contenido math se guarda como string crudo (para MathJax/KaTeX)
+        raw = self._collect_math(opener)
+        self.add_node({'type': type_, 'name': 'math', 'content': raw})
+
+    def on_close(self, closer: str):
+        if len(self.stack) <= 1:
+            raise SyntaxError(f"'{closer}' inesperado: no hay bloque abierto")
+        if self.frame['closer'] != closer:
+            raise SyntaxError(f"Se esperaba '{self.frame['closer']}', se encontró '{closer}'")
+        self.stack.pop()
+
+    def on_text(self, value: str):
+        if self.frame['context'] == 'parameter':
+            self.frame['node']['parameters'].append(value.strip())
         else:
-            addNode(current_node, value)
+            self.add_node(value)
 
-# Texto de entrada
-input_ = ''
-# input_ = "\\def{t}{\\section{cuerpo} $$ x + y $$}"
-# Abrir y leer el archivo línea por línea
-file_path = sys.argv[1] if len(sys.argv) > 1 else 'examples/test.tex'  # Reemplaza con la ruta de tu archivo
-print(f"{file_path}")
-with open(file_path, 'r') as file:
-    for line in file:
-        line = line.strip()  # Eliminar saltos de línea y espacios innecesarios
-        input_ += line + ' '  # Agregar un espacio para separar líneas
+    def _collect_math(self, closer: str) -> str:
+        """Recolecta el LaTeX crudo dentro de $...$ o $$...$$ """
+        parts = []
+        while self.pos < len(self.tokens):
+            kind, value = self.tokens[self.pos]
+            is_end = (kind == 'MATH_BLOCK' and closer == '$$') or \
+                     (kind == 'MATH_INLINE' and closer == '$')
+            if is_end:
+                self.pos += 1
+                break
+            parts.append(value)
+            self.pos += 1
+        return ''.join(parts).strip()
 
-# Proceso de lectura del texto y comandos
-newString = ''
-math_opener = ''
-skip_next = False # Para $$
-for i, letter in enumerate(input_):
-    next_char = input_[i + 1] if i + 1 < len(input_) else ''
-    if skip_next:
-        skip_next = False
-        continue
+    def _step(self):
+        kind, value = self.consume()
+        match kind:
+            case 'COMMAND':                         self.on_command(value)
+            case 'MATH_BLOCK':                      self.on_math('$$')
+            case 'MATH_INLINE':                     self.on_math('$')
+            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':  self.on_close(value)
+            case 'OPEN_BRACE'  | 'OPEN_BRACKET':
+                raise SyntaxError(f"'{value}' inesperado sin comando previo")
+            case 'TEXT':                            self.on_text(value)
+            # WHITESPACE: ignorado a nivel estructural
 
-    if letter in ['{', '[']:
-        if index[-1]['context'] == 'math':
-            newString += letter
-            continue
-        if newString:  # Es un comando
-            handle_command(newString, letter)
-            newString = ''
-        elif index[-1]['parameters']: # Tiene param y esta justo en el cambio
-            continue # No se crea nodo y tampoco error de vacio
-        else:
-            print(f"Error: Comando vacío antes de '{letter}'")
-            exit(0)
-    elif letter in ['}', ']']:
-        if index[-1]['context'] == 'math':
-            newString += letter
-            continue
-        add_text(newString)
-        close_block(letter)
-        newString = ''
-    elif letter == '$':
-        math_opener = '$$' if next_char == '$' else '$'
-        if index[-1]['context'] == 'math':
-            add_text(newString)
-            close_block(math_opener)
-            newString = ''
-        else:
-            handle_math_opener(math_opener)
-        if math_opener == '$$': skip_next = True
-        math_opener = ''
-    elif letter == ' ' and newString:
-        add_text(newString)
-        newString = ''
-    elif letter == ' ':
-        continue # Elimina el espacio en '$ tex'
-    else:
-        newString += letter
+    def run(self) -> list:
+        while self.pos < len(self.tokens):
+            self._step()
+        if len(self.stack) > 1:
+            raise SyntaxError("Fin de archivo: bloque sin cerrar")
+        return self.tree
 
-# Procesar cualquier texto restante
-if newString:
-    add_text(newString)
 
-# Impresión del árbol resultante
-print(input_)
-pprint.pprint(tree)
+# ─── 4. API pública ───────────────────────────────────────────────────────────
 
+def compile_tex(src: str) -> list:
+    return Parser(tokenize(src)).run()
+
+
+# ─── 5. Transpiler: JSON → LaTeX ─────────────────────────────────────────────
+
+def transpile_json_to_tex(data: dict) -> str:
+    def process_content(content):
+        if isinstance(content, str):
+            return content
+        elif isinstance(content, list):
+            parts = []
+            for i, item in enumerate(content):
+                rendered = process_item(item)
+                if rendered is not None:
+                    if parts:
+                        prev = parts[-1]
+                        space = needs_space(prev, rendered)
+                        if space:
+                            parts.append(' ')
+                    parts.append(rendered)
+            return ''.join(parts)
+        return ''
+    
+    def needs_space(before: str, after: str) -> bool:
+        if not before or not after:
+            return False
+        before = before.rstrip()
+        after = after.lstrip()
+        if not before or not after:
+            return False
+        
+        b_end = before[-1] if before else ''
+        a_start = after[0] if after else ''
+        
+        if before.endswith('$') and after.startswith('$'):
+            return True
+        if before.endswith('$$') and after.startswith('$$'):
+            return False
+        if before.endswith('}') and after.startswith('$'):
+            return False
+        
+        if before.endswith('$') and a_start.isalnum():
+            return True
+        if b_end.isalnum() and after.startswith('$'):
+            return True
+        if b_end.isalnum() and a_start.isalnum():
+            return True
+        if b_end == '}' and a_start.isalnum():
+            return True
+        
+        return False
+    
+    def process_item(item):
+        if isinstance(item, str):
+            return item
+        
+        item_type = item.get('type')
+        
+        if item_type == 'text':
+            return item.get('content', '')
+        
+        elif item_type == 'equation':
+            return f"${item.get('content', '')}$"
+        
+        elif item_type == 'block_math':
+            return f"$${item.get('content', '')}$$"
+        
+        elif item_type == 'new_line':
+            return '\n'
+        
+        elif item_type == 'note':
+            title = process_content(item.get('title', {}).get('content', ''))
+            note_content = process_content(item.get('content', {}).get('content', []))
+            return f"\\textbf{{{title}}}: {note_content}"
+        
+        elif item_type == 'block':
+            items = item.get('items', [])
+            return '\\begin{itemize}\n' + ''.join(process_item(i) for i in items) + '\\end{itemize}\n'
+        
+        elif item_type == 'item':
+            content = process_content(item.get('content', []))
+            return f"\\item {content}\n"
+        
+        elif item_type == 'image':
+            url = item.get('url', {}).get('content', '')
+            style = item.get('style', {}).get('content', '100')
+            img_content = process_content(item.get('content', {}).get('content', []))
+            return f"\\begin{{figure}}[H]\n\\centering\n\\includegraphics[width={style}% ]{{{url}}}\n\\caption{{{img_content}}}\n\\end{{figure}}\n"
+        
+        elif item_type == 'alert':
+            alert_content = process_content(item.get('content', []))
+            return f"\\begin{{alert}}\n{alert_content}\\end{{alert}}\n"
+        
+        elif item_type == 'start':
+            return process_content(item.get('content', []))
+        
+        return None
+    
+    result = process_content(data.get('content', []))
+    
+    result = re.sub(r'\$\$([^\n])', r'$$\n\1', result)
+    result = re.sub(r'([^\n])\$\$', r'\1\n$$', result)
+    result = re.sub(r'\n{3,}', '\n\n', result)
+    result = re.sub(r' +\n', '\n', result)
+    result = re.sub(r'\n +', '\n', result)
+    
+    return result.strip()
+
+
+# ─── 6. CLI ───────────────────────────────────────────────────────────────────
+
+if __name__ == '__main__':
+    path = sys.argv[1] if len(sys.argv) > 1 else 'examples/test.tex'
+    with open(path) as f:
+        result = compile_tex(f.read())
+    print(json.dumps(result, indent=2, ensure_ascii=False))
