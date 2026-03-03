@@ -7,13 +7,18 @@ registry, construye un AST representado como lista de nodos JSON.
 Arquitectura:
   - self.tree   → la raíz del AST (lista de nodos)
   - self.stack  → pila de frames {node, context, closer}
-                  cada frame apunta al nodo padre actual
-                  lo que le confiere contexto
+                   cada frame apunta al nodo padre actual
   - self.frame  → el frame en el tope de la pila
 
 La pila permite que cada nodo sepa quién es su padre sin
 preocuparse por sus hermanos. El padre determina qué puede
 contener: por ejemplo, dentro de math no se abre otro math.
+
+Esquema de nodos (el contrato con el frontend):
+  Texto:    "string directo" (siempre dentro de un content[])
+  Math:     {kind: "math", mode: "inline"|"display", raw: "\\frac{1}{2}"}
+  Comando:  {kind: <produces>, content: [...], params?: [...], **extra}
+  Newline:  {kind: "newline"}
 """
 
 import sys
@@ -27,8 +32,7 @@ class Parser:
         self.tokens = tokens
         self.pos = 0
         self.tree: list = []
-        # Cada frame: {node, context ('root'|'content'|'parameter'), closer}
-        self.stack = [{'node': self.tree, 'context': 'root', 'closer': None}]
+        self.stack = [{'node': self.tree, 'context': 'root', 'closer': None}] # AST inicial
 
     @property
     def frame(self):
@@ -58,7 +62,7 @@ class Parser:
 
     def target(self) -> list:
         """Devuelve la lista donde insertar el próximo nodo hijo."""
-        node = self.frame['node']
+        node = self.frame['node'] # Ultimo elemento del stack
         return node if isinstance(node, list) else node['content']
 
     def add_node(self, node):
@@ -67,13 +71,23 @@ class Parser:
             text = node.strip()
             if not text:
                 return
-            # Texto consecutivo se fusiona en un solo string
             if target and isinstance(target[-1], str):
                 target[-1] += ' ' + text
             else:
                 target.append(text)
         else:
             target.append(node)
+
+    # ── Consumir bloque sincrónico ────────────────────────────────────────
+
+    def _consume_brace_block(self, node: dict, context: str):
+        """Consume un bloque {…} sincrónicamente (espera a que cierre)."""
+        self.expect('OPEN_BRACE')
+        self.stack.append({'node': node, 'context': context, 'closer': '}'})
+        depth = len(self.stack) # Variable local por llamada, cada invocacion tiene profundidad
+        while self.pos < len(self.tokens) and len(self.stack) >= depth:
+            # len(stack)-1 cuando cierra } -> stack.pop, condicion local de salida
+            self._step()
 
     # ── Handlers por tipo de token ────────────────────────────────────────
 
@@ -96,38 +110,49 @@ class Parser:
                 self.pos += 1
 
     def on_command(self, cmd: str):
+        """
+        Handler genérico de comandos.
+
+        Lee la definición del registry y actúa en consecuencia:
+        no hay ningún if por nombre de comando específico.
+        """
         props = COMMANDS.get(cmd)
         if props is None:
             print(f"Warning: comando desconocido '{cmd}'", file=sys.stderr)
             self._skip_brace_args()
             return
 
+        # ── Self-closing (sin argumentos) ──
         if props.get('self_closing'):
-            self.add_node({'type': props['type'], 'name': props['name']})
+            node = {'kind': props['produces']}
+            node.update(props.get('extra', {}))
+            self.add_node(node)
             return
 
-        new_node = {'type': props['type'], 'name': props['name'], 'content': []}
-        if props['params']:
-            new_node['parameters'] = []
+        # ── Construir el nodo ──
+        total_args = props.get('args', 1) # Bloques de argumento {p1}{p2}{content}
+        param_args = props.get('param_args', 0) # Argumentos que son parametros
+        content_args = total_args - param_args
 
-        self.add_node(new_node)
+        node = {'kind': props['produces']}
+        node.update(props.get('extra', {}))
+        if param_args > 0:
+            node['params'] = []
+        node['content'] = []
 
-        # Bloque de parámetros (ej: \def{param}{content})
-        if props['params']:
-            self.expect('OPEN_BRACE')
-            self.stack.append({'node': new_node, 'context': 'parameter', 'closer': '}'})
-            depth = len(self.stack)
-            while self.pos < len(self.tokens) and len(self.stack) >= depth:
-                self._step()
+        self.add_node(node)
 
-        # Bloque de contenido
-        self.expect('OPEN_BRACE')
-        self.stack.append({'node': new_node, 'context': 'content', 'closer': '}'})
+        # ── Consumir argumentos: primero params, luego content ──
+        for _ in range(param_args):
+            self._consume_brace_block(node, 'parameter')
+
+        for _ in range(content_args):
+            self._consume_brace_block(node, 'content')
 
     def on_math(self, opener: str):
-        mode = 'block' if opener == '$$' else 'inline'
+        mode = 'display' if opener == '$$' else 'inline'
         raw = self._collect_math(opener)
-        self.add_node({'type': mode, 'name': 'math', 'content': raw})
+        self.add_node({'kind': 'math', 'mode': mode, 'raw': raw})
 
     def on_close(self, closer: str):
         if len(self.stack) <= 1:
@@ -138,7 +163,7 @@ class Parser:
 
     def on_text(self, value: str):
         if self.frame['context'] == 'parameter':
-            self.frame['node']['parameters'].append(value.strip())
+            self.frame['node']['params'].append(value.strip())
         else:
             self.add_node(value)
 
@@ -163,13 +188,13 @@ class Parser:
     def _step(self):
         kind, value = self.consume()
         match kind:
-            case 'COMMAND':                         self.on_command(value)
-            case 'MATH_BLOCK':                      self.on_math('$$')
-            case 'MATH_INLINE':                     self.on_math('$')
+            case 'COMMAND':                          self.on_command(value)
+            case 'MATH_BLOCK':                       self.on_math('$$')
+            case 'MATH_INLINE':                      self.on_math('$')
             case 'CLOSE_BRACE' | 'CLOSE_BRACKET':   self.on_close(value)
             case 'OPEN_BRACE' | 'OPEN_BRACKET':
                 raise SyntaxError(f"'{value}' inesperado sin comando previo")
-            case 'TEXT':                            self.on_text(value)
+            case 'TEXT':                             self.on_text(value)
             # WHITESPACE: ignorado a nivel estructural
 
     def run(self) -> list:

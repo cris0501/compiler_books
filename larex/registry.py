@@ -1,24 +1,40 @@
 """
 Registro de comandos conocidos.
 
-Cada entrada define cómo el parser debe consumir un comando:
-  - name:         nombre semántico del nodo resultante
-  - type:         'block' | 'inline' (layout hint para el frontend)
-  - params:       True si el comando tiene un bloque de parámetros
-                  antes del contenido, ej: \\def{param}{content}
-  - self_closing: True si el comando no consume argumentos {…}
+Cada entrada le dice al parser CÓMO consumir un comando:
+  - produces:     qué 'kind' de nodo genera en el AST
+  - args:         cuántos bloques {…} consume (default 0)
+  - param_args:   cuántos de esos args van a 'params' (default 0)
+                  los restantes van a 'content'
+  - extra:        campos fijos que se copian al nodo (ej: level)
+  - self_closing: True si no consume argumentos
 
-Para agregar un comando nuevo, solo se añade una entrada aquí.
-El parser no necesita cambios.
+El parser es genérico: lee estas propiedades y actúa en
+consecuencia. Para agregar un comando nuevo, solo se añade
+una entrada aquí. El parser no necesita cambios.
+
+Ejemplo de cómo se lee:
+  '\\section' produce un nodo kind='heading' con level=1,
+  consume 1 argumento {…} que va a content.
+
+  '\\def' produce un nodo kind='note',
+  consume 2 argumentos: el primero va a params, el segundo a content.
 """
 
 COMMANDS: dict[str, dict] = {
-    '\\section':    {'name': 'section',    'type': 'block',  'params': False},
-    '\\subsection': {'name': 'subsection', 'type': 'block',  'params': False},
-    '\\def':        {'name': 'definition', 'type': 'inline', 'params': True},
-    '\\textbf':     {'name': 'bold',       'type': 'inline', 'params': False},
-    '\\textit':     {'name': 'italic',     'type': 'inline', 'params': False},
-    '\\newline':    {'name': 'newline',    'type': 'inline', 'params': False, 'self_closing': True},
-    '\\n':          {'name': 'newline',    'type': 'inline', 'params': False, 'self_closing': True},
+    # Estructura
+    '\\section':    {'produces': 'heading',  'args': 1, 'extra': {'level': 1}},
+    '\\subsection': {'produces': 'heading',  'args': 1, 'extra': {'level': 2}},
+
+    # Formato inline
+    '\\textbf':     {'produces': 'bold',     'args': 1},
+    '\\textit':     {'produces': 'italic',   'args': 1},
+
+    # Bloques con parámetro + contenido
+    '\\def':        {'produces': 'note',     'args': 2, 'param_args': 1},
+
+    # Sin argumentos
+    '\\newline':    {'produces': 'newline',  'args': 0, 'self_closing': True},
+    '\\n':          {'produces': 'newline',  'args': 0, 'self_closing': True},
 }
 
