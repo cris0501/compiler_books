@@ -22,6 +22,7 @@ Esquema de nodos (el contrato con el frontend):
 """
 
 import sys
+import re
 
 from .tokens import tokenize
 from .registry import COMMANDS, ENVIRONMENTS
@@ -313,5 +314,6 @@ class Parser:
 
 def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
+    src = re.sub(r'(?<!\\)%.*', '', src)
     return Parser(tokenize(src)).run()
 
