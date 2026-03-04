@@ -44,4 +44,5 @@ COMMANDS: dict[str, dict] = {
 ENVIRONMENTS: dict[str, dict] = {
     'enumerate': {'produces': 'list', 'extra': {'ordered': True}},
     'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
+    'equation':  {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
 }

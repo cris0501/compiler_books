@@ -116,7 +116,7 @@ class Parser:
         Lee la definición del registry y actúa en consecuencia:
         no hay ningún if por nombre de comando específico.
         """
-        # ── Casos especiales ──
+        # ── Casos especiales, irrumpimos el proceso ──
         if cmd == '\\begin':
             self.on_begin()
             return
@@ -171,6 +171,16 @@ class Parser:
             print(f"Warning: environment desconocido '{name}'", file=sys.stderr)
             return
 
+        # ── Environment con contenido raw (equation, etc.) ──
+        if props.get('raw'):
+            raw = self._collect_until_end(name)
+            node = {'kind': props['produces']}
+            node.update(props.get('extra', {}))
+            node['raw'] = raw
+            self.add_node(node)
+            return
+
+        # ── Environment con contenido parseado (enumerate, etc.) ──
         node = {'kind': props['produces']}
         node.update(props.get('extra', {}))
         node['content'] = []
@@ -224,8 +234,7 @@ class Parser:
         else:
             self.add_node(value)
 
-    # ── Recolección de math crudo ─────────────────────────────────────────
-
+    # ── Recolección de math ─────────────────────────────────────────
     def _collect_math(self, closer: str) -> str:
         """Recolecta el LaTeX crudo dentro de $...$ o $$...$$"""
         parts = []
@@ -239,6 +248,35 @@ class Parser:
             parts.append(value)
             self.pos += 1
         return ''.join(parts).strip()
+
+    def _collect_until_end(self, name: str) -> str:
+        """Recolecta contenido raw hasta \\end{nombre}."""
+        parts = []
+        while self.pos < len(self.tokens):
+            kind, value = self.tokens[self.pos]
+
+            # ¿Es \end?
+            if kind == 'COMMAND' and value == '\\end':
+                # Verificar que sea \end{name}
+                save_pos = self.pos
+                self.pos += 1
+                try:
+                    self.expect('OPEN_BRACE')
+                    end_name = self.expect('TEXT') # Nombre del entorno
+                    self.expect('CLOSE_BRACE')
+                    if end_name == name:
+                        return ''.join(parts).strip()
+                except SyntaxError:
+                    pass
+                # No era el \end correcto, restaurar y seguir
+                parts.append(value)
+                self.pos = save_pos + 1
+                continue
+
+            parts.append(value)
+            self.pos += 1
+
+        raise SyntaxError(f"Fin de archivo: falta \\end{{{name}}}")
 
     # ── Loop principal ────────────────────────────────────────────────────
 
@@ -267,5 +305,3 @@ class Parser:
 def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
     return Parser(tokenize(src)).run()
-
-
