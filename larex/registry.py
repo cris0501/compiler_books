@@ -36,5 +36,12 @@ COMMANDS: dict[str, dict] = {
     # Sin argumentos
     '\\newline':    {'produces': 'newline',  'args': 0, 'self_closing': True},
     '\\n':          {'produces': 'newline',  'args': 0, 'self_closing': True},
+    
+    # Close siblings or implicit close
+    '\\item':     {'produces': 'item', 'args': 0, 'self_closing': False, 'implicit_close': True},
 }
 
+ENVIRONMENTS: dict[str, dict] = {
+    'enumerate': {'produces': 'list', 'extra': {'ordered': True}},
+    'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
+}

@@ -24,7 +24,7 @@ Esquema de nodos (el contrato con el frontend):
 import sys
 
 from .tokens import tokenize
-from .registry import COMMANDS
+from .registry import COMMANDS, ENVIRONMENTS
 
 
 class Parser:
@@ -116,6 +116,17 @@ class Parser:
         Lee la definición del registry y actúa en consecuencia:
         no hay ningún if por nombre de comando específico.
         """
+        # ── Casos especiales ──
+        if cmd == '\\begin':
+            self.on_begin()
+            return
+        if cmd == '\\end':
+            self.on_end()
+            return
+        if cmd == '\\item':
+            self._on_item()
+            return
+
         props = COMMANDS.get(cmd)
         if props is None:
             print(f"Warning: comando desconocido '{cmd}'", file=sys.stderr)
@@ -148,6 +159,52 @@ class Parser:
 
         for _ in range(content_args):
             self._consume_brace_block(node, 'content')
+
+    def on_begin(self):
+        """Handler para \\begin{nombre}. Abre un environment."""
+        self.expect('OPEN_BRACE')
+        name = self.expect('TEXT') # Nombre del nodo
+        self.expect('CLOSE_BRACE')
+
+        props = ENVIRONMENTS.get(name)
+        if props is None:
+            print(f"Warning: environment desconocido '{name}'", file=sys.stderr)
+            return
+
+        node = {'kind': props['produces']}
+        node.update(props.get('extra', {}))
+        node['content'] = []
+
+        self.add_node(node)
+        self.stack.append({'node': node, 'context': 'content', 'closer': '\\end{' + name + '}'})
+
+    def on_end(self):
+        """Handler para \\end{nombre}. Cierra el environment."""
+        self.expect('OPEN_BRACE')
+        name = self.expect('TEXT')
+        self.expect('CLOSE_BRACE')
+
+        expected_closer = '\\end{' + name + '}'
+
+        # Si hay un \item abierto, cerrarlo
+        if len(self.stack) > 1 and self.frame.get('context') == 'item':
+            self.stack.pop()
+
+        if len(self.stack) <= 1:
+            raise SyntaxError("\\end{" + name + "} sin \\begin correspondiente")
+        if self.frame['closer'] != expected_closer:
+            raise SyntaxError(f"Se esperaba {self.frame['closer']}, se encontró {expected_closer}")
+        self.stack.pop()
+
+    def _on_item(self):
+        """Handler para \\item. Cierra el item anterior si existe."""
+        # Cierre implícito: si ya hay un item abierto, cerrarlo
+        if len(self.stack) > 1 and self.frame.get('context') == 'item':
+            self.stack.pop()
+
+        node = {'kind': 'item', 'content': []}
+        self.add_node(node)
+        self.stack.append({'node': node, 'context': 'item', 'closer': None})
 
     def on_math(self, opener: str):
         mode = 'display' if opener == '$$' else 'inline'
@@ -210,4 +267,5 @@ class Parser:
 def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
     return Parser(tokenize(src)).run()
+
 
