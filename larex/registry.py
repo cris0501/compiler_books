@@ -30,8 +30,13 @@ COMMANDS: dict[str, dict] = {
     '\\textbf':     {'produces': 'bold',     'args': 1},
     '\\textit':     {'produces': 'italic',   'args': 1},
 
-    # Bloques con parámetro + contenido
-    '\\def':        {'produces': 'note',     'args': 2, 'param_args': 1},
+    # Elementos nombrados en matematicas
+    '\\def':        {'produces': 'definition',     'args': 2, 'param_args': 1},
+    '\\teo':        {'produces': 'teorem',     'args': 2, 'param_args': 1},
+    '\\ax':         {'produces': 'axiom',     'args': 2, 'param_args': 1},
+
+    # Bloques con funcionalidad
+    '\\note':         {'produces': 'note',     'args': 2, 'param_args': 1, 'inline_only': True},
 
     # Sin argumentos
     '\\newline':    {'produces': 'newline',  'args': 0, 'self_closing': True},
@@ -46,3 +51,4 @@ ENVIRONMENTS: dict[str, dict] = {
     'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
     'equation':  {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
 }
+

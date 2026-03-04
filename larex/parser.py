@@ -80,10 +80,13 @@ class Parser:
 
     # ── Consumir bloque sincrónico ────────────────────────────────────────
 
-    def _consume_brace_block(self, node: dict, context: str):
+    def _consume_brace_block(self, node: dict, context: str, inline_only: bool = False):
         """Consume un bloque {…} sincrónicamente (espera a que cierre)."""
         self.expect('OPEN_BRACE')
-        self.stack.append({'node': node, 'context': context, 'closer': '}'})
+        frame = {'node': node, 'context': context, 'closer': '}'}
+        if inline_only:
+            frame['inline_only'] = True
+        self.stack.append(frame)
         depth = len(self.stack) # Variable local por llamada, cada invocacion tiene profundidad
         while self.pos < len(self.tokens) and len(self.stack) >= depth:
             # len(stack)-1 cuando cierra } -> stack.pop, condicion local de salida
@@ -157,11 +160,15 @@ class Parser:
         for _ in range(param_args):
             self._consume_brace_block(node, 'parameter')
 
+        inline_only = props.get('inline_only', False)
         for _ in range(content_args):
-            self._consume_brace_block(node, 'content')
+            self._consume_brace_block(node, 'content', inline_only=inline_only)
 
     def on_begin(self):
         """Handler para \\begin{nombre}. Abre un environment."""
+        if self.frame.get('inline_only'):
+            raise SyntaxError("Environments no permitidos en este contexto")
+
         self.expect('OPEN_BRACE')
         name = self.expect('TEXT') # Nombre del nodo
         self.expect('CLOSE_BRACE')
@@ -218,6 +225,8 @@ class Parser:
 
     def on_math(self, opener: str):
         mode = 'display' if opener == '$$' else 'inline'
+        if mode == 'display' and self.frame.get('inline_only'):
+            raise SyntaxError("Math display ($$) no permitido en este contexto")
         raw = self._collect_math(opener)
         self.add_node({'kind': 'math', 'mode': mode, 'raw': raw})
 
@@ -305,3 +314,4 @@ class Parser:
 def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
     return Parser(tokenize(src)).run()
+
