@@ -19,6 +19,7 @@ TOKEN_SPECS = [
     ('CLOSE_BRACE',   r'\}'),
     ('OPEN_BRACKET',  r'\['),
     ('CLOSE_BRACKET', r'\]'),
+    ('PARAGRAPH',     r'\n[ \t]*\n'),
     ('WHITESPACE',    r'[ \t\n]+'),
     ('TEXT',          r'[^\\$\{\}\[\]\s]+'),
 ]
@@ -36,4 +37,5 @@ def tokenize(src: str) -> list[tuple[str, str]]:
     [('COMMAND', '\\\\textbf'), ('OPEN_BRACE', '{'), ('TEXT', 'hola'), ('CLOSE_BRACE', '}')]
     """
     return [(m.lastgroup, m.group()) for m in _MASTER_RE.finditer(src)]
+
 

@@ -296,7 +296,8 @@ class Parser:
             case 'COMMAND':                          self.on_command(value)
             case 'MATH_BLOCK':                       self.on_math('$$')
             case 'MATH_INLINE':                      self.on_math('$')
-            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':   self.on_close(value)
+            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':    self.on_close(value)
+            case 'PARAGRAPH':                        self.add_node({'kind': 'paragraph'})
             case 'OPEN_BRACE' | 'OPEN_BRACKET':
                 raise SyntaxError(f"'{value}' inesperado sin comando previo")
             case 'TEXT':                             self.on_text(value)
@@ -316,4 +317,5 @@ def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
     src = re.sub(r'(?<!\\)%.*', '', src)
     return Parser(tokenize(src)).run()
+
 
