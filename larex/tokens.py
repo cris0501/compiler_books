@@ -22,6 +22,8 @@ class Token(NamedTuple):
 TOKEN_SPECS = [
     ('MATH_BLOCK',    r'\$\$'),           # $$ antes que $ (longest match manual)
     ('MATH_INLINE',   r'\$'),
+    ('DOUBLE_BACKSLASH', r'\\\\'),        # Nueva linea
+    ('ESCAPED_CHAR',     r'\\[{}$%&#_]'), # \{ \} \$ \% etc.
     ('COMMAND',       r'\\[a-zA-Z]+'),    # \section, \textbf, \newline ...
     ('OPEN_BRACE',    r'\{'),
     ('CLOSE_BRACE',   r'\}'),
@@ -51,5 +53,6 @@ def tokenize(src: str) -> list[Token]:
         col = start - src.rfind('\n', 0, start)  # rfind devuelve -1 si no hay \n → col = start+1
         tokens.append(Token(m.lastgroup, m.group(), line, col))
     return tokens
+
 
 

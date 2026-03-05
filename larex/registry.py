@@ -41,6 +41,7 @@ COMMANDS: dict[str, dict] = {
     # Sin argumentos
     '\\newline':    {'produces': 'newline',  'args': 0, 'self_closing': True},
     '\\n':          {'produces': 'newline',  'args': 0, 'self_closing': True},
+    '\\backslash': {'produces': 'backslash', 'args': 0, 'self_closing': True},
     
     # Close siblings or implicit close
     '\\item':     {'produces': 'item', 'args': 0, 'self_closing': False, 'implicit_close': True},
@@ -53,5 +54,7 @@ ENVIRONMENTS: dict[str, dict] = {
     'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
     'equation':  {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
     'figure':    {'produces': 'figure', 'extra': {}, 'raw': False},
+    'block':     {'produces': 'block', 'extra': {}},
 }
+
 

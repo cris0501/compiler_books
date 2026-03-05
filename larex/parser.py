@@ -376,6 +376,8 @@ class Parser:
             case 'MATH_INLINE':                      self.on_math('$')
             case 'CLOSE_BRACE' | 'CLOSE_BRACKET':    self.on_close(tok.value)
             case 'PARAGRAPH':                        self.add_node({'kind': 'paragraph'})
+            case 'DOUBLE_BACKSLASH':                 self.add_node({'kind': 'newline'})
+            case 'ESCAPED_CHAR':                     self.add_node(tok.value)
             case 'OPEN_BRACE' | 'OPEN_BRACKET':
                 raise SyntaxError(f"'{tok.value}' inesperado sin comando previo{self._at()}")
             case 'TEXT':                             self.on_text(tok.value)
@@ -400,5 +402,7 @@ def compile_tex(src: str) -> list:
     """Recibe código LaTeX y devuelve el AST como lista de nodos."""
     src = re.sub(r'(?<!\\)%.*', '', src)
     return Parser(tokenize(src)).run()
+
+
 
 
