@@ -34,7 +34,7 @@ class Parser:
         self.pos = 0
         self.last_tok: Token | None = None
         self.tree: list = []
-        self.stack = [{'node': self.tree, 'context': 'root', 'closer': None}] # AST inicial
+        self.stack = [{'node': self.tree, 'context': 'root', 'closer': None, 'opened_at': None}] # AST inicial
 
     @property
     def frame(self):
@@ -92,7 +92,7 @@ class Parser:
     def _consume_brace_block(self, node: dict, context: str, inline_only: bool = False):
         """Consume un bloque {…} sincrónicamente (espera a que cierre)."""
         self.expect('OPEN_BRACE')
-        frame = {'node': node, 'context': context, 'closer': '}'}
+        frame = {'node': node, 'context': context, 'closer': '}', 'opened_at': self.last_tok}
         if inline_only:
             frame['inline_only'] = True
         self.stack.append(frame)
@@ -178,6 +178,7 @@ class Parser:
         if self.frame.get('inline_only'):
             raise SyntaxError(f"Environments no permitidos en este contexto{self._at()}")
 
+        begin_tok = self.last_tok  # Token del \begin, antes de consumir argumentos
         self.expect('OPEN_BRACE')
         name = self.expect('TEXT') # Nombre del nodo
         self.expect('CLOSE_BRACE')
@@ -202,7 +203,7 @@ class Parser:
         node['content'] = []
 
         self.add_node(node)
-        self.stack.append({'node': node, 'context': 'content', 'closer': '\\end{' + name + '}'})
+        self.stack.append({'node': node, 'context': 'content', 'closer': '\\end{' + name + '}', 'opened_at': begin_tok})
 
     def on_end(self):
         """Handler para \\end{nombre}. Cierra el environment."""
@@ -315,7 +316,12 @@ class Parser:
         while self.pos < len(self.tokens):
             self._step()
         if len(self.stack) > 1:
-            raise SyntaxError(f"Fin de archivo: bloque sin cerrar{self._at()}")
+            # Buscar el frame sin cerrar más relevante (ignorar \item que cierra implícitamente)
+            frame = next((f for f in reversed(self.stack[1:]) if f['closer'] is not None), self.stack[-1])
+            closer = frame['closer']
+            opened_at = frame.get('opened_at')
+            loc = f" (línea {opened_at.line}, columna {opened_at.col})" if opened_at else ""
+            raise SyntaxError(f"Fin de archivo: falta cerrar '{closer}', abierto{loc}")
         return self.tree
 
 
