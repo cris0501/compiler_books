@@ -44,11 +44,14 @@ COMMANDS: dict[str, dict] = {
     
     # Close siblings or implicit close
     '\\item':     {'produces': 'item', 'args': 0, 'self_closing': False, 'implicit_close': True},
+    '\\includegraphics': {'produces': 'image', 'args': 1, 'opt_args': 1, 'self_closing': True},
+    '\\caption':         {'produces': 'caption', 'args': 1},
 }
 
 ENVIRONMENTS: dict[str, dict] = {
     'enumerate': {'produces': 'list', 'extra': {'ordered': True}},
     'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
     'equation':  {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    'figure':    {'produces': 'figure', 'extra': {}, 'raw': False},
 }
 

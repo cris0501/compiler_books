@@ -101,6 +101,26 @@ class Parser:
             # len(stack)-1 cuando cierra } -> stack.pop, condicion local de salida
             self._step()
 
+    def _consume_opt_arg(self) -> str | None:
+        """Intenta consumir un argumento opcional [...]. Devuelve el texto o None."""
+        self.skip_whitespace()
+        if self.pos >= len(self.tokens):
+            return None
+        if self.tokens[self.pos][0] != 'OPEN_BRACKET':
+            return None
+
+        self.pos += 1  # consume [
+        parts = []
+        while self.pos < len(self.tokens):
+            kind, value, line, col = self.tokens[self.pos]
+            if kind == 'CLOSE_BRACKET':
+                self.pos += 1
+                return ''.join(parts).strip()
+            parts.append(value)
+            self.pos += 1
+
+        raise SyntaxError("Fin de archivo: falta ]")
+
     # ── Handlers por tipo de token ────────────────────────────────────────
 
     def _skip_brace_args(self):
@@ -145,10 +165,40 @@ class Parser:
             self._skip_brace_args()
             return
 
-        # ── Self-closing (sin argumentos) ──
+        # ── Self-closing (puede tener args pero no contenido recursivo) ──
         if props.get('self_closing'):
             node = {'kind': props['produces']}
             node.update(props.get('extra', {}))
+
+            opt_count = props.get('opt_args', 0)
+            for _ in range(opt_count):
+                opt = self._consume_opt_arg()
+                if opt is not None:
+                    if 'options' not in node:
+                        node['options'] = []
+                    node['options'].append(opt)
+
+            total_args = props.get('args', 0)
+            for _ in range(total_args):
+                self.skip_whitespace()
+                self.expect('OPEN_BRACE')
+                parts = []
+                depth = 1
+                while self.pos < len(self.tokens) and depth > 0:
+                    kind, value, line, col = self.tokens[self.pos]
+                    if kind == 'OPEN_BRACE':
+                        depth += 1
+                    elif kind == 'CLOSE_BRACE':
+                        depth -= 1
+                        if depth == 0:
+                            self.pos += 1
+                            break
+                    parts.append(value)
+                    self.pos += 1
+                if 'params' not in node:
+                    node['params'] = []
+                node['params'].append(''.join(parts).strip())
+
             self.add_node(node)
             return
 
@@ -162,6 +212,15 @@ class Parser:
         if param_args > 0:
             node['params'] = []
         node['content'] = []
+
+        # ── Consumir argumentos opcionales [...]  ──
+        opt_count = props.get('opt_args', 0)
+        for _ in range(opt_count):
+            opt = self._consume_opt_arg()
+            if opt is not None:
+                if 'options' not in node:
+                    node['options'] = []
+                node['options'].append(opt)
 
         self.add_node(node)
 
