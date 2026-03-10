@@ -24,14 +24,15 @@ Esquema de nodos (el contrato con el frontend):
 import sys
 import re
 
-from .tokens import tokenize
+from .tokens import tokenize, Token
 from .registry import COMMANDS, ENVIRONMENTS
 
 
 class Parser:
-    def __init__(self, tokens: list[tuple[str, str]]):
+    def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.pos = 0
+        self.last_tok: Token | None = None
         self.tree: list = []
         self.stack = [{'node': self.tree, 'context': 'root', 'closer': None}] # AST inicial
 
@@ -41,23 +42,30 @@ class Parser:
 
     # ── Utilidades de lectura ─────────────────────────────────────────────
 
-    def consume(self) -> tuple[str, str]:
+    def _at(self) -> str:
+        """Devuelve la posición del último token consumido para mensajes de error."""
+        if self.last_tok is not None:
+            return f" (línea {self.last_tok.line}, columna {self.last_tok.col})"
+        return ""
+
+    def consume(self) -> Token:
         tok = self.tokens[self.pos]
+        self.last_tok = tok
         self.pos += 1
         return tok
 
     def skip_whitespace(self):
-        while self.pos < len(self.tokens) and self.tokens[self.pos][0] == 'WHITESPACE':
+        while self.pos < len(self.tokens) and self.tokens[self.pos].kind == 'WHITESPACE':
             self.pos += 1
 
     def expect(self, kind: str) -> str:
         self.skip_whitespace()
         if self.pos >= len(self.tokens):
-            raise SyntaxError(f"Fin de archivo inesperado, se esperaba {kind}")
-        tok_kind, tok_val = self.consume()
-        if tok_kind != kind:
-            raise SyntaxError(f"Se esperaba {kind}, se encontró {tok_kind!r} ({tok_val!r})")
-        return tok_val
+            raise SyntaxError(f"Fin de archivo inesperado, se esperaba {kind}{self._at()}")
+        tok = self.consume()
+        if tok.kind != kind:
+            raise SyntaxError(f"Se esperaba {kind}, se encontró {tok.kind!r} ({tok.value!r}){self._at()}")
+        return tok.value
 
     # ── Inserción en el AST ───────────────────────────────────────────────
 
@@ -99,14 +107,14 @@ class Parser:
         """Consume bloques {…} que siguen a un comando desconocido."""
         while True:
             pos = self.pos
-            while pos < len(self.tokens) and self.tokens[pos][0] == 'WHITESPACE':
+            while pos < len(self.tokens) and self.tokens[pos].kind == 'WHITESPACE':
                 pos += 1
-            if pos >= len(self.tokens) or self.tokens[pos][0] != 'OPEN_BRACE':
+            if pos >= len(self.tokens) or self.tokens[pos].kind != 'OPEN_BRACE':
                 break
             self.pos = pos + 1
             depth = 1
             while self.pos < len(self.tokens) and depth > 0:
-                kind, _ = self.tokens[self.pos]
+                kind = self.tokens[self.pos].kind
                 if kind == 'OPEN_BRACE':
                     depth += 1
                 elif kind == 'CLOSE_BRACE':
@@ -168,7 +176,7 @@ class Parser:
     def on_begin(self):
         """Handler para \\begin{nombre}. Abre un environment."""
         if self.frame.get('inline_only'):
-            raise SyntaxError("Environments no permitidos en este contexto")
+            raise SyntaxError(f"Environments no permitidos en este contexto{self._at()}")
 
         self.expect('OPEN_BRACE')
         name = self.expect('TEXT') # Nombre del nodo
@@ -209,9 +217,9 @@ class Parser:
             self.stack.pop()
 
         if len(self.stack) <= 1:
-            raise SyntaxError("\\end{" + name + "} sin \\begin correspondiente")
+            raise SyntaxError(f"\\end{{{name}}} sin \\begin correspondiente{self._at()}")
         if self.frame['closer'] != expected_closer:
-            raise SyntaxError(f"Se esperaba {self.frame['closer']}, se encontró {expected_closer}")
+            raise SyntaxError(f"Se esperaba {self.frame['closer']}, se encontró {expected_closer}{self._at()}")
         self.stack.pop()
 
     def _on_item(self):
@@ -227,15 +235,15 @@ class Parser:
     def on_math(self, opener: str):
         mode = 'display' if opener == '$$' else 'inline'
         if mode == 'display' and self.frame.get('inline_only'):
-            raise SyntaxError("Math display ($$) no permitido en este contexto")
+            raise SyntaxError(f"Math display ($$) no permitido en este contexto{self._at()}")
         raw = self._collect_math(opener)
         self.add_node({'kind': 'math', 'mode': mode, 'raw': raw})
 
     def on_close(self, closer: str):
         if len(self.stack) <= 1:
-            raise SyntaxError(f"'{closer}' inesperado: no hay bloque abierto")
+            raise SyntaxError(f"'{closer}' inesperado: no hay bloque abierto{self._at()}")
         if self.frame['closer'] != closer:
-            raise SyntaxError(f"Se esperaba '{self.frame['closer']}', se encontró '{closer}'")
+            raise SyntaxError(f"Se esperaba '{self.frame['closer']}', se encontró '{closer}'{self._at()}")
         self.stack.pop()
 
     def on_text(self, value: str):
@@ -249,13 +257,13 @@ class Parser:
         """Recolecta el LaTeX crudo dentro de $...$ o $$...$$"""
         parts = []
         while self.pos < len(self.tokens):
-            kind, value = self.tokens[self.pos]
-            is_end = (kind == 'MATH_BLOCK' and closer == '$$') or \
-                     (kind == 'MATH_INLINE' and closer == '$')
+            tok = self.tokens[self.pos]
+            is_end = (tok.kind == 'MATH_BLOCK' and closer == '$$') or \
+                     (tok.kind == 'MATH_INLINE' and closer == '$')
             if is_end:
                 self.pos += 1
                 break
-            parts.append(value)
+            parts.append(tok.value)
             self.pos += 1
         return ''.join(parts).strip()
 
@@ -263,10 +271,10 @@ class Parser:
         """Recolecta contenido raw hasta \\end{nombre}."""
         parts = []
         while self.pos < len(self.tokens):
-            kind, value = self.tokens[self.pos]
+            tok = self.tokens[self.pos]
 
             # ¿Es \end?
-            if kind == 'COMMAND' and value == '\\end':
+            if tok.kind == 'COMMAND' and tok.value == '\\end':
                 # Verificar que sea \end{name}
                 save_pos = self.pos
                 self.pos += 1
@@ -279,35 +287,35 @@ class Parser:
                 except SyntaxError:
                     pass
                 # No era el \end correcto, restaurar y seguir
-                parts.append(value)
+                parts.append(tok.value)
                 self.pos = save_pos + 1
                 continue
 
-            parts.append(value)
+            parts.append(tok.value)
             self.pos += 1
 
-        raise SyntaxError(f"Fin de archivo: falta \\end{{{name}}}")
+        raise SyntaxError(f"Fin de archivo: falta \\end{{{name}}}{self._at()}")
 
     # ── Loop principal ────────────────────────────────────────────────────
 
     def _step(self):
-        kind, value = self.consume()
-        match kind:
-            case 'COMMAND':                          self.on_command(value)
+        tok = self.consume()
+        match tok.kind:
+            case 'COMMAND':                          self.on_command(tok.value)
             case 'MATH_BLOCK':                       self.on_math('$$')
             case 'MATH_INLINE':                      self.on_math('$')
-            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':    self.on_close(value)
+            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':    self.on_close(tok.value)
             case 'PARAGRAPH':                        self.add_node({'kind': 'paragraph'})
             case 'OPEN_BRACE' | 'OPEN_BRACKET':
-                raise SyntaxError(f"'{value}' inesperado sin comando previo")
-            case 'TEXT':                             self.on_text(value)
+                raise SyntaxError(f"'{tok.value}' inesperado sin comando previo{self._at()}")
+            case 'TEXT':                             self.on_text(tok.value)
             # WHITESPACE: ignorado a nivel estructural
 
     def run(self) -> list:
         while self.pos < len(self.tokens):
             self._step()
         if len(self.stack) > 1:
-            raise SyntaxError("Fin de archivo: bloque sin cerrar")
+            raise SyntaxError(f"Fin de archivo: bloque sin cerrar{self._at()}")
         return self.tree
 
 

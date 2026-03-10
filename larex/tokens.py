@@ -1,8 +1,8 @@
 """
 Análisis léxico (scanner).
 
-Convierte un string de LaTeX en una lista de tokens (tipo, valor).
-Cada token es una tupla ('TIPO', 'valor_original').
+Convierte un string de LaTeX en una lista de tokens.
+Cada token es un Token(kind, value, line, col).
 
 El tokenizer NO sabe de semántica: no distingue entre un comando
 conocido y uno desconocido. Eso lo decide el parser consultando
@@ -10,6 +10,14 @@ el registry.
 """
 
 import re
+from typing import NamedTuple
+
+
+class Token(NamedTuple):
+    kind: str
+    value: str
+    line: int
+    col: int
 
 TOKEN_SPECS = [
     ('MATH_BLOCK',    r'\$\$'),           # $$ antes que $ (longest match manual)
@@ -29,13 +37,19 @@ _MASTER_RE = re.compile(
 )
 
 
-def tokenize(src: str) -> list[tuple[str, str]]:
+def tokenize(src: str) -> list[Token]:
     """
-    Recibe código LaTeX crudo y devuelve una lista de tokens.
+    Recibe código LaTeX crudo y devuelve una lista de tokens con posición.
 
-    >>> tokenize(r"\\textbf{hola}")
+    >>> [(t.kind, t.value) for t in tokenize(r"\\textbf{hola}")]
     [('COMMAND', '\\\\textbf'), ('OPEN_BRACE', '{'), ('TEXT', 'hola'), ('CLOSE_BRACE', '}')]
     """
-    return [(m.lastgroup, m.group()) for m in _MASTER_RE.finditer(src)]
+    tokens = []
+    for m in _MASTER_RE.finditer(src):
+        start = m.start()
+        line = src.count('\n', 0, start) + 1
+        col = start - src.rfind('\n', 0, start)  # rfind devuelve -1 si no hay \n → col = start+1
+        tokens.append(Token(m.lastgroup, m.group(), line, col))
+    return tokens
 
 
