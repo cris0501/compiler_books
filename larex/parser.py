@@ -121,6 +121,24 @@ class Parser:
 
         raise SyntaxError("Fin de archivo: falta ]")
 
+    def _consume_raw_brace(self) -> str:
+        """Consume un bloque {…} y devuelve su contenido como texto plano."""
+        self.expect('OPEN_BRACE')
+        parts = []
+        depth = 1
+        while self.pos < len(self.tokens) and depth > 0:
+            kind, value, linea, col = self.tokens[self.pos]
+            if kind == 'OPEN_BRACE':
+                depth += 1
+            elif kind == 'CLOSE_BRACE':
+                depth -= 1
+                if depth == 0:
+                    self.pos += 1
+                    break
+            parts.append(value)
+            self.pos += 1
+        return ''.join(parts).strip()
+
     # ── Handlers por tipo de token ────────────────────────────────────────
 
     def _skip_brace_args(self):
@@ -165,8 +183,15 @@ class Parser:
             self._skip_brace_args()
             return
 
-        # ── Self-closing (puede tener args pero no contenido recursivo) ──
+        # ── Self-closing (sin argumentos) ──
         if props.get('self_closing'):
+            node = {'kind': props['produces']}
+            node.update(props.get('extra', {}))
+            self.add_node(node)
+            return
+
+        # ── Args como texto plano (no se parsean recursivamente) ──
+        if props.get('raw_args'):
             node = {'kind': props['produces']}
             node.update(props.get('extra', {}))
 
@@ -179,25 +204,10 @@ class Parser:
                     node['options'].append(opt)
 
             total_args = props.get('args', 0)
+            if total_args > 0:
+                node['params'] = []
             for _ in range(total_args):
-                self.skip_whitespace()
-                self.expect('OPEN_BRACE')
-                parts = []
-                depth = 1
-                while self.pos < len(self.tokens) and depth > 0:
-                    kind, value, line, col = self.tokens[self.pos]
-                    if kind == 'OPEN_BRACE':
-                        depth += 1
-                    elif kind == 'CLOSE_BRACE':
-                        depth -= 1
-                        if depth == 0:
-                            self.pos += 1
-                            break
-                    parts.append(value)
-                    self.pos += 1
-                if 'params' not in node:
-                    node['params'] = []
-                node['params'].append(''.join(parts).strip())
+                node['params'].append(self._consume_raw_brace())
 
             self.add_node(node)
             return

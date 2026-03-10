@@ -44,7 +44,7 @@ COMMANDS: dict[str, dict] = {
     
     # Close siblings or implicit close
     '\\item':     {'produces': 'item', 'args': 0, 'self_closing': False, 'implicit_close': True},
-    '\\includegraphics': {'produces': 'image', 'args': 1, 'opt_args': 1, 'self_closing': True},
+    '\\includegraphics': {'produces': 'image', 'args': 1, 'opt_args': 1, 'raw_args': True},
     '\\caption':         {'produces': 'caption', 'args': 1},
 }
 
