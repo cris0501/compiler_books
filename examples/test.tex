@@ -61,3 +61,16 @@ Creamos ahora un bloque, que permite agrupar elementos y mostrarlos mediante bot
 
 Y los bloques a su vez, puede contener cualquier elemento que se requiera, tanto ecuaciones
 como imagenes, notas, etc.
+
+Y ahora integramos referencias. Esto se logro con un diccionario label:\{id, index\}, asi cuando
+se crea una nueva referencia, entonces tenemos la key y automaticamente, un contador. Los
+contadores formales aun no se agregan.
+
+\begin{equation}
+    E = mc^2
+\end{equation}
+\label{eq:einstein}
+
+Y se citan con \backslash ref\{id\}, ej, \ref{eq:einstein}
+
+Como se agregan al output como hermano del arbol, este ya no regresa un array sino un diccionario.

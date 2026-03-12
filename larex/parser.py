@@ -29,12 +29,15 @@ from .registry import COMMANDS, ENVIRONMENTS
 
 
 class Parser:
+
     def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.pos = 0
         self.last_tok: Token | None = None
         self.tree: list = []
         self.stack = [{'node': self.tree, 'context': 'root', 'closer': None, 'opened_at': None}] # AST inicial
+        self.refs = {}
+        self.label_counter = 0
 
     @property
     def frame(self):
@@ -176,6 +179,12 @@ class Parser:
         if cmd == '\\item':
             self._on_item()
             return
+        if cmd == '\\label':
+            self._on_label()
+            return
+        if cmd == '\\ref':
+            self._on_ref()
+            return
 
         props = COMMANDS.get(cmd)
         if props is None:
@@ -302,6 +311,35 @@ class Parser:
         self.add_node(node)
         self.stack.append({'node': node, 'context': 'item', 'closer': None})
 
+    def _on_label(self):
+        """Handler para \\label{id}. Registra una referencia."""
+        label_id = self._consume_raw_brace()
+        self.label_counter += 1
+
+        if label_id in self.refs:
+            raise SyntaxError(f"Label duplicado: '{label_id}'")
+
+        self.refs[label_id] = {'index': self.label_counter}
+
+        # Intentar asociar el label al nodo anterior
+        target = self.target()
+        if target and isinstance(target[-1], dict):
+            target[-1]['id'] = label_id
+            target[-1]['index'] = self.label_counter
+        else:
+            # Label suelto, emitir como nodo propio
+            self.add_node({'kind': 'label', 'id': label_id, 'index': self.label_counter})
+
+    def _on_ref(self):
+        """Handler para \\ref{id}. Referencia a un label existente."""
+        ref_id = self._consume_raw_brace()
+
+        if ref_id not in self.refs:
+            print(f"Warning: referencia '{ref_id}' no definida", file=sys.stderr)
+
+        index = self.refs.get(ref_id, {}).get('index')
+        self.add_node({'kind': 'ref', 'target': ref_id, 'index': index})
+
     def on_math(self, opener: str):
         mode = 'display' if opener == '$$' else 'inline'
         if mode == 'display' and self.frame.get('inline_only'):
@@ -398,11 +436,13 @@ class Parser:
 
 # ── API pública ───────────────────────────────────────────────────────────
 
-def compile_tex(src: str) -> list:
-    """Recibe código LaTeX y devuelve el AST como lista de nodos."""
+def compile_tex(src: str) -> dict:
+    """Recibe código LaTeX y devuelve el AST y las referencias."""
     src = re.sub(r'(?<!\\)%.*', '', src)
-    return Parser(tokenize(src)).run()
-
-
-
+    parser = Parser(tokenize(src))
+    tree = parser.run()
+    return {
+        'content': tree,
+        'refs': parser.refs
+    }
 
