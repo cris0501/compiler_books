@@ -1,60 +1,75 @@
 """
-Registro de comandos conocidos.
+Registro de comandos y environments conocidos.
 
-Cada entrada le dice al parser CÓMO consumir un comando:
-  - produces:     qué 'kind' de nodo genera en el AST
-  - args:         cuántos bloques {…} consume (default 0)
-  - param_args:   cuántos de esos args van a 'params' (default 0)
-                  los restantes van a 'content'
-  - extra:        campos fijos que se copian al nodo (ej: level)
-  - self_closing: True si no consume argumentos
+Cada entrada le dice al handler COMO consumir un comando o environment
+y que nodo producir en el AST. El parser no necesita cambios para
+agregar entradas nuevas.
 
-El parser es genérico: lee estas propiedades y actúa en
-consecuencia. Para agregar un comando nuevo, solo se añade
-una entrada aquí. El parser no necesita cambios.
+Opciones disponibles:
 
-Ejemplo de cómo se lee:
-  '\\section' produce un nodo kind='heading' con level=1,
-  consume 1 argumento {…} que va a content.
+  produces     - (obligatorio) valor de 'kind' en el nodo del AST
+  extra        - campos fijos que se copian al nodo tal cual
+  args         - cantidad de bloques {} a consumir, todos van a 'content'
+  opt_args     - maximo de bloques [] posicionales a intentar (nativo LaTeX)
+  kv           - si es True, el [] se parsea como pares key=value (custom esfm)
+  raw_args     - si es True, los {} se leen como texto plano sin parsear
+  raw          - (solo environments) el cuerpo entero se recolecta sin parsear
+  self_closing - si es True, no consume ningun argumento
+  inline_only  - si es True, no permite environments ni $$ dentro
 
-  '\\def' produce un nodo kind='note',
-  consume 2 argumentos: el primero va a params, el segundo a content.
+Notas:
+  - opt_args y kv son mutuamente excluyentes
+  - raw_args aplica a los {} de un comando
+  - raw aplica al cuerpo de un environment
+
+Custom
+\comando[key1=val1, key2=val2]{contenido}
+         \___ un solo [] ____/ \_ args _/
+Vanilla
+\comando[opt1][opt2]{arg1}{arg2}
+         \_ max N _/\__ args __/
 """
 
 COMMANDS: dict[str, dict] = {
-    # Estructura
-    '\\section':    {'produces': 'heading',  'args': 1, 'extra': {'level': 1}},
-    '\\subsection': {'produces': 'heading',  'args': 1, 'extra': {'level': 2}},
-
-    # Formato inline
-    '\\textbf':     {'produces': 'bold',     'args': 1},
-    '\\textit':     {'produces': 'italic',   'args': 1},
-
-    # Elementos nombrados en matematicas
-    '\\def':        {'produces': 'definition',     'args': 2, 'param_args': 1},
-    '\\teo':        {'produces': 'teorem',     'args': 2, 'param_args': 1},
-    '\\ax':         {'produces': 'axiom',     'args': 2, 'param_args': 1},
-
-    # Bloques con funcionalidad
-    '\\note':         {'produces': 'note',     'args': 2, 'param_args': 1, 'inline_only': True},
-
-    # Sin argumentos
-    '\\newline':    {'produces': 'newline',  'args': 0, 'self_closing': True},
-    '\\n':          {'produces': 'newline',  'args': 0, 'self_closing': True},
-    '\\backslash': {'produces': 'backslash', 'args': 0, 'self_closing': True},
-    
-    # Close siblings or implicit close
-    '\\item':     {'produces': 'item', 'args': 0, 'self_closing': False, 'implicit_close': True},
-    '\\includegraphics': {'produces': 'image', 'args': 1, 'opt_args': 1, 'raw_args': True},
+    # -- LaTeX estandar (posicional) --
+    '\\section':         {'produces': 'heading', 'args': 1, 'extra': {'level': 1}},
+    '\\subsection':      {'produces': 'heading', 'args': 1, 'extra': {'level': 2}},
+    '\\textbf':          {'produces': 'bold',    'args': 1},
+    '\\textit':          {'produces': 'italic',  'args': 1},
+    '\\includegraphics': {'produces': 'image',   'args': 1, 'opt_args': 1, 'raw_args': True},
     '\\caption':         {'produces': 'caption', 'args': 1},
+
+    # -- Self-closing (sin argumentos) --
+    '\\newline':    {'produces': 'newline',      'self_closing': True},
+    '\\n':          {'produces': 'newline',      'self_closing': True},
+    '\\backslash':  {'produces': 'backslash',    'self_closing': True},
+    '\\qed':        {'produces': 'qed',          'self_closing': True},
+    '\\obs':        {'produces': 'observation',  'self_closing': True},
+    '\\dem':        {'produces': 'proof-mark',   'self_closing': True},
+
+    # -- Custom esfm (key-value en [], contenido en {}) --
+    '\\note': {'produces': 'note', 'args': 1, 'kv': True, 'inline_only': True},
 }
 
 ENVIRONMENTS: dict[str, dict] = {
-    'enumerate': {'produces': 'list', 'extra': {'ordered': True}},
-    'itemize':   {'produces': 'list', 'extra': {'ordered': False}},
-    'equation':  {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
-    'figure':    {'produces': 'figure', 'extra': {}, 'raw': False},
-    'block':     {'produces': 'block', 'extra': {}},
-}
+    # -- LaTeX estandar (posicional) --
+    'enumerate': {'produces': 'list',   'extra': {'ordered': True}, 'opt_args': 1},
+    'itemize':   {'produces': 'list',   'extra': {'ordered': False}},
+    'figure':    {'produces': 'figure', 'opt_args': 1},
 
+    # -- Raw: el cuerpo se recolecta como texto plano --
+    'equation': {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+
+    # -- Custom esfm (key-value: label, title) --
+    'definition':  {'produces': 'definition',  'kv': True},
+    'axiom':       {'produces': 'axiom',       'kv': True},
+    'theorem':     {'produces': 'theorem',     'kv': True},
+    'lemma':       {'produces': 'lemma',       'kv': True},
+    'proposition': {'produces': 'proposition', 'kv': True},
+    'corollary':   {'produces': 'corollary',   'kv': True},
+    'exercise':    {'produces': 'exercise',    'kv': True},
+    'convention':  {'produces': 'convention',  'kv': True},
+    'proof':       {'produces': 'proof',       'kv': True},
+    'block':       {'produces': 'block',       'kv': True},
+}
 

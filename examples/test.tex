@@ -27,9 +27,9 @@ practicas, con la intencion de llevar al limite este parser.
 \end{equation}
 
 Dentro de cada elemento se debe restringir el contenido que se puede escribir,
-ie, que pasa si dentro de una \note{nota}{ Elemento flotante que sirve para
+ie, que pasa si dentro de una \note[nota]{ Elemento flotante que sirve para
 agregar aclaraciones, referencias o incluso enlaces } intentasemos agregar % test comment
-elementos como \note{equations}{ Son elementos demaciado grandes que haria que
+elementos como \note[equations]{ Son elementos demaciado grandes que haria que
 una nota fuese muy grande}, por ello, inline_only sirve para restringir esto
 %\note{test}{ Intentando romper notas con $$maths$$ no simples }
 
@@ -44,7 +44,7 @@ Creamos ahora un bloque, que permite agrupar elementos y mostrarlos mediante bot
         Por ejemplo, en Topologia se puede abordar desde 2 perspectirvas, por un lado
         usar metricas y por otro lado, el concepto de bolas.
         Creo que puede ser util no tratarlos de forma indistinta puesto que, aun que
-        las \note{bolas}{Una bola es un subconjunto de $R^n$} aparecen como una
+        las \note[bolas]{Una bola es un subconjunto de $R^n$} aparecen como una
         consecuencia de tener una metrica, las bolas
         por si mismas tambien son un concepto que no necesariamente requeiren de
         tener definida una metrica.
@@ -74,3 +74,4 @@ contadores formales aun no se agregan.
 Y se citan con \backslash ref\{id\}, ej, \ref{eq:einstein}
 
 Como se agregan al output como hermano del arbol, este ya no regresa un array sino un diccionario.
+

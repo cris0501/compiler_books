@@ -54,5 +54,3 @@ def tokenize(src: str) -> list[Token]:
         tokens.append(Token(m.lastgroup, m.group(), line, col))
     return tokens
 
-
-
