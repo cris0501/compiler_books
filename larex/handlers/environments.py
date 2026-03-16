@@ -58,6 +58,9 @@ def handle_begin(p):
         node['options'] = opts
     node['content'] = []
 
+    # -- Register reference --
+    _register_label(p, node, kv)
+
     p.add_node(node)
     p.stack.append({
         'node': node,
@@ -113,4 +116,19 @@ def _collect_until_end(p, name: str) -> str:
         p.pos += 1
     raise SyntaxError(f"Fin de archivo: falta \\end{{{name}}}{p._at()}")
 
+# -- Util methods --
+def _register_label(p, node: dict, kv: dict):
+    """Si hay label en los kv params, registra la referencia."""
+    label_id = kv.get('label')
+    if not label_id:
+        return
+
+    p.label_counter += 1
+
+    if label_id in p.refs:
+        raise SyntaxError(f"Label duplicado: '{label_id}'")
+
+    p.refs[label_id] = {'index': p.label_counter}
+    node['id'] = label_id
+    node['index'] = p.label_counter
 

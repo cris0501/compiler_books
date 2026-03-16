@@ -24,7 +24,7 @@ Notas:
 
 Custom
 \comando[key1=val1, key2=val2]{contenido}
-         \___ un solo [] ____/ \_ args _/
+         \___ un solo [] ____/\_ args _/
 Vanilla
 \comando[opt1][opt2]{arg1}{arg2}
          \_ max N _/\__ args __/
