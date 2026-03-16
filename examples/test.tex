@@ -7,6 +7,8 @@ Es por ello que tiene espacios, no mantiene una estructura clara y tampoco
 sigue un patron particular, inclusive, agregare de forma intencional malas
 practicas, con la intencion de llevar al limite este parser.
 
+\chapter{ Listas }
+
 \begin{enumerate}
     \item Test de enumeracion
     \item Agregamos un segundo item
@@ -26,6 +28,8 @@ practicas, con la intencion de llevar al limite este parser.
     E = mc^2
 \end{equation}
 
+\chapter{ Comentarios }
+
 Dentro de cada elemento se debe restringir el contenido que se puede escribir,
 ie, que pasa si dentro de una \note[nota]{ Elemento flotante que sirve para
 agregar aclaraciones, referencias o incluso enlaces } intentasemos agregar % test comment
@@ -33,10 +37,14 @@ elementos como \note[equations]{ Son elementos demaciado grandes que haria que
 una nota fuese muy grande}, por ello, inline_only sirve para restringir esto
 %\note{test}{ Intentando romper notas con $$maths$$ no simples }
 
+\chapter{ Imagenes }
+
 \begin{figure}
   \includegraphics[80]{img/topologia.png}
   \caption{Prueba de imagen}
 \end{figure}
+
+\chapter{ Bloques }
 
 Creamos ahora un bloque, que permite agrupar elementos y mostrarlos mediante botones:
 \begin{block}
@@ -66,6 +74,8 @@ Y ahora integramos referencias. Esto se logro con un diccionario label:\{id, ind
 se crea una nueva referencia, entonces tenemos la key y automaticamente, un contador. Los
 contadores formales aun no se agregan.
 
+\chapter{ Referencias }
+
 \begin{equation}
     E = mc^2
 \end{equation}
@@ -77,6 +87,14 @@ Como se agregan al output como hermano del arbol, este ya no regresa un array si
 
 Por fin se agregaron los custom components de la libreria original. Sin embargo, crear una
 retrocompatibilidad implico un cambio grande en dichas librerias.
+
+\chapter{ Customs components }
+
+En este punto, el core ya parsea la base de latex, se pueden integrar equaciones, listas, imagenes, referencias
+y algun elemento mas. Si bien, con esto ya se pueden crear documentos, tambien es cierto que la intencion de este
+"parser" es expandir LaTeX de una forma sencilla. Sin tener que aprender otra sintaxis y semantica, unicamente se
+agregan algunos comandos o componentes extras. Estos siguen la sintaxis de latex y como ya podemos leer y
+procesar la sintaxis de latex, la adaptacion del escritor a nuevos componentes es relativamente sencilla.
 
 \begin{axiom}
   Los custom components dejaron de ser commands inline para ser ahora
@@ -103,3 +121,10 @@ retrocompatibilidad implico un cambio grande en dichas librerias.
 \begin{exercise}[label=ej-1]
   Demuestre que ...
 \end{exercise}
+
+\section{ Capitulos }
+
+En este punto, se integran las secciones y capitulos. Algo esencial al momento de escribir
+documentos largos (libros, notas). Esto permite separar el contenido en agrupaciones con
+informacion relacionada. A su vez, nos permite crear una lista de capitulos para crear
+referencias y permitir al usuario viajar rapido entre contenido.

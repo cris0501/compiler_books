@@ -23,6 +23,8 @@ class Parser:
         self.stack = [{'node': self.tree, 'context': 'root', 'closer': None, 'opened_at': None}]
         self.refs = {}
         self.label_counter = 0
+        self.chapters = {}
+        self.chapter_counter = 0
 
     @property
     def frame(self):
@@ -126,5 +128,9 @@ def compile_tex(src: str) -> dict:
     src = re.sub(r'(?<!\\)%.*', '', src)
     parser = Parser(tokenize(src))
     tree = parser.run()
-    return {'content': tree, 'refs': parser.refs}
+    return {
+        'content': tree,
+        'refs': parser.refs,
+        'chapters': parser.chapters,
+    }
 

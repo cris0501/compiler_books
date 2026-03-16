@@ -32,6 +32,7 @@ Vanilla
 
 COMMANDS: dict[str, dict] = {
     # -- LaTeX estandar (posicional) --
+    '\\chapter':         {'produces': 'heading', 'args': 1, 'extra': {'level': 0}},
     '\\section':         {'produces': 'heading', 'args': 1, 'extra': {'level': 1}},
     '\\subsection':      {'produces': 'heading', 'args': 1, 'extra': {'level': 2}},
     '\\textbf':          {'produces': 'bold',    'args': 1},
@@ -72,4 +73,5 @@ ENVIRONMENTS: dict[str, dict] = {
     'proof':       {'produces': 'proof',       'kv': True},
     'block':       {'produces': 'block',       'kv': True},
 }
+
 
