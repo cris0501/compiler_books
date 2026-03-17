@@ -39,8 +39,18 @@ COMMANDS: dict[str, dict] = {
     '\\textit':          {'produces': 'italic',  'args': 1},
     '\\includegraphics': {'produces': 'image',   'args': 1, 'opt_args': 1, 'raw_args': True},
     '\\caption':         {'produces': 'caption', 'args': 1},
+    '\\emph':            {'produces': 'italic',     'args': 1},
+    '\\underline':       {'produces': 'underline',  'args': 1},
+    '\\texttt':          {'produces': 'monospace',  'args': 1},
+    '\\textsc':          {'produces': 'smallcaps',  'args': 1},
+    '\\textsf':          {'produces': 'sansserif',  'args': 1},
 
-    # -- Self-closing (sin argumentos) --
+    # Links
+    '\\url':             {'produces': 'url',        'args': 1, 'raw_args': True},
+
+    # Self-closing
+    '\\noindent':   {'produces': 'noindent',   'self_closing': True},
+    '\\newpage':    {'produces': 'pagebreak',  'self_closing': True},
     '\\newline':    {'produces': 'newline',      'self_closing': True},
     '\\n':          {'produces': 'newline',      'self_closing': True},
     '\\backslash':  {'produces': 'backslash',    'self_closing': True},
