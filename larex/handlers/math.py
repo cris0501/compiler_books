@@ -13,10 +13,12 @@ def _collect_math(p, closer: str) -> str:
     while p.pos < len(p.tokens):
         tok = p.tokens[p.pos]
         is_end = (tok.kind == 'MATH_BLOCK' and closer == '$$') or \
-                 (tok.kind == 'MATH_INLINE' and closer == '$')
+                 (tok.kind == 'MATH_INLINE' and closer == '$') or \
+                 (tok.kind == 'DISPLAY_MATH_CLOSE' and closer == '\\[')
         if is_end:
             p.pos += 1
             break
         parts.append(tok.value)
         p.pos += 1
     return ''.join(parts).strip()
+

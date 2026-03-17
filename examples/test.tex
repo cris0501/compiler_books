@@ -7,16 +7,114 @@ Es por ello que tiene espacios, no mantiene una estructura clara y tampoco
 sigue un patron particular, inclusive, agregare de forma intencional malas
 practicas, con la intencion de llevar al limite este parser.
 
-\chapter{ Listas }
+\chapter{ Inicio }
+
+\section{ Primeras ideas }
+
+Este proyecto tiene disintas finalidades, el conocer como se crea un lenguaje, como es que se
+define y se consume una sintaxis. Ahora, eso tambien permite crear nuevas preguntas derivadas,
+por ejemplo ¿por que hay diferencia de velocidad de ejecución?
+
+Ya se que la respuesta es porque es compilado, interpretado o medio medio como Java, pero la
+pregunta en realidad es, ¿por que obtaron por ese resultado y como eso cambia la forma en que
+el compilador fucniona?
+
+Inicialmente se me ocurrio parsear por \note[exresiones regulares]{Es definir patrones que se
+pueden indetificar y capturar}, es decir, buscaba por patrones,
+ej, \backslash command\{.*\}\{ .*(Contenido) \} y al incio puede parecer util, pero el problema
+ahora sera anidar porque \backslash command\{.*\}\{ \backslash command\{...\} \} genera
+problema con el cierre pues el cierre \} del comando interior cierra al superio y deja fuera
+un \} que seria su cierre real. Entonces puedes sumar la posicion y agregar \} pero entonces
+lo mismo pasaria al anidar otro y llevar un contador, una \textbf{profundida}.
+
+Ya que la expresion se empieza a volver compleja, unicamente para comandos, en entornos se
+pone un poco peor porque ya no solo se controlad desde el regex, sino que se deben crear
+funciones para extraer el contenido hasta el cierre. Asi que si un regex no es el ideal,
+la alternativa seria trabajar caracter a caracter o un regex diferente.
+
+\section {El núcleo  }
+
+Decidí cambiar el mecanismo para crear el arbol. Anteriormente probe con \textbf{expreciones regulares}
+y con \note[Lark]{ Es una herramienta para parseo y analisis gramatico } pero es complejo debido a que
+las anidaciones no funcionan de forma clara, son \textit{complejas}.
+
+\section{           La alternativa}
+
+La siguiente idea es, acumular los caracteres hasta encontrar un caracter de ejecución, un
+caracter especial. La idea es, para leer un comando \backslash command\{....
+
+Entonces se lee \backslash, significa que empieza un comando, lo siguiente será el nombre
+que define que comando es, asi que empieza a leer las letras, y vamos almacenando ese valor:
 
 \begin{enumerate}
-    \item Test de enumeracion
-    \item Agregamos un segundo item
+  \item c
+  \item o
+  \item ....
+  \item \{
+\end{enumerate}
+
+Y de momento, pum, encontramos el caracter \{, eso implica una acción, es decir, el comando
+que se leyo fue \textit{command}, este comando comienza a leer el contenido del grupo que
+tiene \{...\}. Suena bien pero, y si estas en modo matematico, el contexto dice que \{ no es
+un comando de acción, es un literal, entonces no lo proceses, por otra parte, si estas en
+un contexto normal y encuentra un \{ entonces querra evalularlo y falla por no tener comando
+acumulado asi que el contexto indicará que hacerle, lo mismo para [, etc... Esto complica
+la lectura, seran muchas validaciones y aun que tengo un control completo porque incluso
+podria definir nuevos contexto, agregar comandos y leer sus parametros se complica.
+
+Esto es parecido a como sumar 2+2 y hacerlo mediante union de conjuntos, mucho control,
+mucha complejidad. Aun creo que usar regex parece ser mejor opcion pero debe ser simple...
+
+\section{ Reactivacion }
+
+Ya que cambiar el modelo de regex a caracter fue algo laborioso, regresar al modelo anterior
+e intentar solucionar los problemas en donde se quedo era algo que requieria tiempo, por ahora
+detuve el proyecto. No obtuve resultados los suficientemente utiles para liberar una versión
+\note[estable]{ Una version que pudiera compilar al menos el mas basico documento } a la
+comunidad. Algunos estudiantes e incluso egresados me contactaron para ofrecerme apoyo a crear
+documentos, les agradeci por la intencion pero al no poder tener avances en el parser, la
+estructura podria cambiar en unos meses asi que debiamos modificar lo ya existente o peor aun,
+encontrar una limitacion o problema lo suficientemente complejo de resolver que ahi se detenga
+el proyecto puesto que \alert{ puede que el proyecto se abandone }
+
+\chapter{ Tokens como en la IA }
+
+Experimentando con algunos modelos libres, pense en replicar el uso de los tokens, es decir,
+si usar un regex pero para crear una tabla de tokens, asi, no importa el contenido, solo me
+centro en determinar el tipo de token, si es un comando, un texto, etc. Tambien note que
+el contenido puede variar y no es un problema porque el cambio al renderizado por el
+navegador permite indicar como renderizarlo, asi que el arbol que genera el parser no se
+debe diseñar pensando en como renderizar sino en como organizar esa salida.
+
+El primer paso es crear el tokenizador. Los primero comandos integrados fueron una prueba,
+se agregaron comandos como \backslash section, \backslash\backslash y estilos de texto. Esto
+para probar si la tokenización fucnionaba.
+
+\section{ El File System }
+
+Cuando tokenizador crecio mucho, se separo la funcion principal en archivos con una sola
+responsabilidad porque seguir un flujo estaba complicado y el parseo asincrono aun que
+estaba bien porque podias ubicar en el codigo donde estaba, no era facil de seguir, porque
+hay dos puntos de ejecucion del step asi que se elimino el parseo asincrono.
+
+\section{ Entornos }
+
+Con esa base mas limpia, los entornos fueron lo primero en implementarse. \texttt{enumerate}
+e \texttt{itemize} fueron el primer soporte, En retrospectiva no fue la mejor idea porque estos
+entornos definen los elementos de su interior mediante \backslash item, entonces no tienes un
+cierre como tal, es un \textit{cierre implicito}. Eso complica todo porque:
+
+\begin{enumerate}
+    \item Detectar los items es buscar un comando particular
+    \item La anidación nativa
     \item \begin{enumerate}
-            \item Lista anidada
-            \item Auto cierre de etiqueta
+            \item Si un entorno no cierra
+            \item Los demas fallaran
           \end{enumerate}
 \end{enumerate}
+
+Pero si se integra bien, entonces en lugar de buscar directamente \backslash item, puedo usarlo
+para buscar otros elementos.
 
 \begin{itemize}
     \item Test de lista
@@ -24,11 +122,45 @@ practicas, con la intencion de llevar al limite este parser.
     \item Cierre implicito del anterior
 \end{itemize}
 
+Y permiten leer ecuaciones inline, asi que creo que al menos lo básico de una lista, funciona.
+
+\chapter{ Contextos }
+
+\section {Ecuaciones}
+
+Aquí el problema es, cuando parseo, todo se categoriza, no se conoce el contexto, el orden o
+la posicion, solo se categoriza asi que una ecuacion nos llega a trozo. Y en un entorno de
+ecuaciones, no se permite otros entornos, al menos en lo simple, entonces llegamos al problema
+de como \textsf{leer} ecuaciones. Justo así, solo leemos, no procesamos ya que el texto deberá
+llegar tal cual al render. Creamos un parametro \textit{raw} y este indica la lectura. Con ello
+obtendremos un entorno tal que:
+
 \begin{equation}
     E = mc^2
 \end{equation}
 
-\chapter{ Comentarios }
+Y eso renderiza la ecuación, el texto llega fiel al arbol. La cuestion ahora es, ¿que sigue?
+
+El punto fuerte de LaTeX es la renderizacion matematica. Integrar cosas \backslash left(, no
+se hace de forma particular, puesto que es aprte del raw.
+
+\section { Comentarios }
+
+Algo que pase por alto, fue agregar comentarios y en LaTeX se usa mucho, a veces para quitar
+elementos del resultado, otras veces como referencias. Agregarlo es facil por la funcionalidad
+que aplica, luego de \%, todo hasta llegar a \backslash newline se ignora. Ya que esto no es
+un comando o entorno, lo podemos eliminar desde la categorizacion, eliminando el resto de la
+linea. As que no hay tanto problema.
+
+\section { Notas }
+
+Despues de los entornos se agrego el comando \note[note]{\backslash note crea un tooltip que
+muestra contenido emergente}, el primer elemento inline con custom de la libreria original con
+logica propia. La implementacion de las notas tuvo que corregirse despues: la posicion era
+relativa y eso rompia el flujo, cambiarla a absoluta lo resolvio. El siguiente problema fue
+restringir el contenido permitido dentro de una nota. Es decir, hasta ahora, no teniamos
+restricciones, una ecuación lee todo el contenido plano, asi que no importaba. En los primeros
+entornos no se agrego una limitacion debido a que recien se estaba creando la base del parser.
 
 Dentro de cada elemento se debe restringir el contenido que se puede escribir,
 ie, que pasa si dentro de una \note[nota]{ Elemento flotante que sirve para
@@ -37,14 +169,47 @@ elementos como \note[equations]{ Son elementos demaciado grandes que haria que
 una nota fuese muy grande}, por ello, inline_only sirve para restringir esto
 %\note{test}{ Intentando romper notas con $$maths$$ no simples }
 
-\chapter{ Imagenes }
+\section{ Imagenes }
+
+Otro de los elementos que obviamente debia integrar es el visualizar imagenes. Es importante
+que es un sitio web puedas verlas sin embargo, tenemos un problema, y es que estos comandos
+no deben parsear su contenido de forma recursiva, sino que se lee y llega plano al arbol,
+entonces significa que se debera parsear como un raw. Hay otros entornos que ya lo hacen.
+
+Se agrego el entorno de imagenes con \texttt{figure}. El entorno envuelve \backslash includegraphics,
+que toma el ancho como argumento opcional, y \backslash caption para el pie. 
 
 \begin{figure}
   \includegraphics[80]{img/topologia.png}
   \caption{Prueba de imagen}
 \end{figure}
 
-\chapter{ Bloques }
+Ahora, algo que es muy importante es la estructura del folder del libro, puesto que poner imagenes
+por cualquier lado  no es una buena practica. Actualmente el parser funciona bien, es estable y
+eso permite ya no solo intentar integrar malas practicas en las pruebas, sino que ya se puede
+pensar en establecer buenas practicas desde la lectura del ficher tex. Así que se recomendara y se
+indicara en la documentacion que la estructura del folder debera ser:
+
+book
+ |-- main.tex
+ |-- assets
+       |-- pictures
+       |-- domain
+
+Eso asegura que el folder este ordenado y mantengan una estrucuta estandar.
+
+\chapter{ Custom components }
+
+\section{ Bloques }
+
+Para poder registrar nuevos elementos se expandio el sistema de registros. En ese commit se agrego
+soporte a \backslash backslash, saltos de linea con doble backslash, el entorno \texttt{block}
+y caracteres especiales. Con esos nuevos registros disponibles, los bloques pudieron implementarse.
+
+La idea es mostrar distintas versiones de un contenido alternando entre ellas con botones.
+El primer intento fue un comando \backslash block\{c1\}\{c2\}\{...\} pero la cantidad de
+subbloques es variable, lo que complicaba el registro y la deteccion del cierre. Usar items
+resulto ser la solucion mas pragmatica.
 
 Creamos ahora un bloque, que permite agrupar elementos y mostrarlos mediante botones:
 \begin{block}
@@ -76,6 +241,12 @@ contadores formales aun no se agregan.
 
 \chapter{ Referencias }
 
+Se agrego la lista de referencias. Cada \backslash label genera una entrada en un diccionario
+\texttt{label:\{id, index\}} con un contador automatico. Esto tambien implico un cambio en el
+output: ya no es un array sino un diccionario, pues las referencias viven como hermanos del
+arbol y no dentro del flujo del texto. Junto con esto, el parser se refactorizo en archivos
+de una sola responsabilidad.
+
 \begin{equation}
     E = mc^2
 \end{equation}
@@ -90,8 +261,13 @@ retrocompatibilidad implico un cambio grande en dichas librerias.
 
 \chapter{ Customs components }
 
+Los custom components de la libreria original existian antes del parser, pero integrarlos
+requirio retrocompatibilidad, lo que implico cambios importantes. La decision fue dejar de
+tratarlos como comandos inline y convertirlos en entornos con key-value props. Asi, siguen
+la misma sintaxis que el parser ya conoce y el escritor no necesita aprender nada nuevo.
+
 En este punto, el core ya parsea la base de latex, se pueden integrar equaciones, listas, imagenes, referencias
-y algun elemento mas. Si bien, con esto ya se pueden crear documentos, tambien es cierto que la intencion de este
+y algun elemento mas. Si bien, con esto ya se pueden crear documentos, tambien es cierto que una intencion de este
 "parser" es expandir LaTeX de una forma sencilla. Sin tener que aprender otra sintaxis y semantica, unicamente se
 agregan algunos comandos o componentes extras. Estos siguen la sintaxis de latex y como ya podemos leer y
 procesar la sintaxis de latex, la adaptacion del escritor a nuevos componentes es relativamente sencilla.
@@ -124,7 +300,33 @@ procesar la sintaxis de latex, la adaptacion del escritor a nuevos componentes e
 
 \section{ Capitulos }
 
+Se creo soporte para capitulos y secciones. Sin esto, todo el contenido vive en un solo
+nivel y no es posible crear una tabla de contenido ni anclas de navegacion. Es algo
+fundamental para documentos largos como libros o apuntes.
+
 En este punto, se integran las secciones y capitulos. Algo esencial al momento de escribir
 documentos largos (libros, notas). Esto permite separar el contenido en agrupaciones con
 informacion relacionada. A su vez, nos permite crear una lista de capitulos para crear
 referencias y permitir al usuario viajar rapido entre contenido.
+
+\subsection{ Mas estilos }
+
+[ 16 / Mar ]
+En este punto, el parser parece estable, es decir, lo basico funciona, no parece tener problemas en identificar la
+profundidad. Y algo que noté, es que a pesar de ya tener una base decente muchos de los documentos se pueden romper
+puesto que aun no tengo muchos comandos incluidos y que se suelen usar mucho.
+
+Pero integrarlos no es muy \textbf{complicado } puesto que ya solo debo \textsc{ REGISTRARLOS     } y el parser ya
+conoce como debe tratarlos. \texttt {Significa} que puedo mejorar la compatibilidad con gran parte de los documentos
+sencillos. Ahorita integré estilos de texto, tambien agregue urls [ \url{https://cris0501.github.io/library/doc} ]
+aunque es muy similar a como se crean las referencias. En cuanto a LaTeX, la estructura es de un comando.
+
+Yo creo que integrare el soporte para grupos y quizá ahí detenga el \textbf  { DESARROLLO } pues ya podria comenzar
+a pasar algunas notas antes de agregar mas features, pues solo el puro parser requiere mucho tiempo mas para crear
+un \texttt{expansor} de macros como lo es LaTeX.
+
+Hoy he decidido cambiar este \textit{ Fichero  }, anteriormente el contenido no tenia sentido, solo probaba las features
+que integraba pero ahora que ya lee correctamente la estructura de un texto, el contenido puedo cambiarlo y este no se
+romperá.
+
+

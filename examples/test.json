@@ -1,0 +1,1045 @@
+{
+  "content": [
+    {
+      "kind": "bold",
+      "content": [
+        "Fichero general de prueba "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Este fichero no contiene informacion ordenada o con una finalidad. ",
+    {
+      "kind": "italic",
+      "content": [
+        "Solo lo uso para testar nuevas features. "
+      ]
+    },
+    " ",
+    {
+      "kind": "newline"
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Es por ello que tiene espacios, no mantiene una estructura clara y tampoco sigue un patron particular, inclusive, agregare de forma intencional malas practicas, con la intencion de llevar al limite este parser.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Inicio "
+      ],
+      "chapter_index": 1
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Primeras ideas "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Este proyecto tiene disintas finalidades, el conocer como se crea un lenguaje, como es que se define y se consume una sintaxis. Ahora, eso tambien permite crear nuevas preguntas derivadas, por ejemplo ¿por que hay diferencia de velocidad de ejecución?",
+    {
+      "kind": "paragraph"
+    },
+    "Ya se que la respuesta es porque es compilado, interpretado o medio medio como Java, pero la pregunta en realidad es, ¿por que obtaron por ese resultado y como eso cambia la forma en que el compilador fucniona?",
+    {
+      "kind": "paragraph"
+    },
+    "Inicialmente se me ocurrio parsear por ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "exresiones regulares"
+      },
+      "content": [
+        "Es definir patrones que se pueden indetificar y capturar"
+      ]
+    },
+    ", es decir, buscaba por patrones, ej, ",
+    {
+      "kind": "backslash"
+    },
+    " command { .* } { .*(Contenido) } y al incio puede parecer util, pero el problema ahora sera anidar porque ",
+    {
+      "kind": "backslash"
+    },
+    " command { .* } { ",
+    {
+      "kind": "backslash"
+    },
+    " command { ... } } genera problema con el cierre pues el cierre } del comando interior cierra al superio y deja fuera un } que seria su cierre real. Entonces puedes sumar la posicion y agregar } pero entonces lo mismo pasaria al anidar otro y llevar un contador, una ",
+    {
+      "kind": "bold",
+      "content": [
+        "profundida"
+      ]
+    },
+    ".",
+    {
+      "kind": "paragraph"
+    },
+    "Ya que la expresion se empieza a volver compleja, unicamente para comandos, en entornos se pone un poco peor porque ya no solo se controlad desde el regex, sino que se deben crear funciones para extraer el contenido hasta el cierre. Asi que si un regex no es el ideal, la alternativa seria trabajar caracter a caracter o un regex diferente.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "El núcleo "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Decidí cambiar el mecanismo para crear el arbol. Anteriormente probe con ",
+    {
+      "kind": "bold",
+      "content": [
+        "expreciones regulares"
+      ]
+    },
+    " y con ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "Lark"
+      },
+      "content": [
+        "Es una herramienta para parseo y analisis gramatico "
+      ]
+    },
+    " pero es complejo debido a que las anidaciones no funcionan de forma clara, son ",
+    {
+      "kind": "italic",
+      "content": [
+        "complejas"
+      ]
+    },
+    ".",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "La alternativa"
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "La siguiente idea es, acumular los caracteres hasta encontrar un caracter de ejecución, un caracter especial. La idea es, para leer un comando ",
+    {
+      "kind": "backslash"
+    },
+    " command { ....",
+    {
+      "kind": "paragraph"
+    },
+    "Entonces se lee ",
+    {
+      "kind": "backslash"
+    },
+    ", significa que empieza un comando, lo siguiente será el nombre que define que comando es, asi que empieza a leer las letras, y vamos almacenando ese valor:",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "list",
+      "ordered": true,
+      "content": [
+        {
+          "kind": "item",
+          "content": [
+            "c "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "o "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            ".... "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "{ "
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Y de momento, pum, encontramos el caracter { , eso implica una acción, es decir, el comando que se leyo fue ",
+    {
+      "kind": "italic",
+      "content": [
+        "command"
+      ]
+    },
+    ", este comando comienza a leer el contenido del grupo que tiene { ... } . Suena bien pero, y si estas en modo matematico, el contexto dice que { no es un comando de acción, es un literal, entonces no lo proceses, por otra parte, si estas en un contexto normal y encuentra un { entonces querra evalularlo y falla por no tener comando acumulado asi que el contexto indicará que hacerle, lo mismo para [ , etc... Esto complica la lectura, seran muchas validaciones y aun que tengo un control completo porque incluso podria definir nuevos contexto, agregar comandos y leer sus parametros se complica.",
+    {
+      "kind": "paragraph"
+    },
+    "Esto es parecido a como sumar 2+2 y hacermo mediante union de conjuntos, mucho control, mucha complejidad. Aun creo que usar regex parece ser mejor opcion pero debe ser simple...",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Reactivacion "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Ya que cambiar el modelo de regex a caracter fue algo laborioso, regresar al modelo anterior e intentar solucionar los problemas en donde se quedo era algo que requieria tiempo, por ahora detuve el proyecto. No obtuve resultados los suficientemente utiles para liberar una versión ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "estable"
+      },
+      "content": [
+        "Una version que pudiera compilar al menos el mas basico documento "
+      ]
+    },
+    " a la comunidad. Algunos estudiantes e incluso egresados me contactaron para ofrecerme apoyo a crear documentos, les agradeci por la intencion pero al no poder tener avances en el parser, la estructura podria cambiar en unos meses asi que debiamos modificar lo ya existente o peor aun, encontrar una limitacion o problema lo suficientemente complejo de resolver que ahi se detenga el proyecto puesto que",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "alert",
+      "content": [
+        "puede que este proyecto muera ignorado como muchos otros "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "y pedir a otras personas que dediquen tiempo en algo con futuro incierto no me agrada.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Tokens como en la IA "
+      ],
+      "chapter_index": 2
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Experimentando con algunos modelos libres, pense en replicar el uso de los tokens, es decir, si usar un regex pero para crear una tabla de tokens, asi, no importa el contenido, solo me centro en determinar el tipo de token, si es un comando, un texto, etc. Tambien note que el contenido puede variar y no es un problema porque el cambio al renderizado por el navegador permite indicar como renderizarlo, asi que el arbol que genera el parser no se debe diseñar pensando en como renderizar sino en como organizar esa salida.",
+    {
+      "kind": "paragraph"
+    },
+    "El primer paso es crear el tokenizador. Los primero comandos integrados fueron una prueba, se agregaron comandos como ",
+    {
+      "kind": "backslash"
+    },
+    " section, ",
+    {
+      "kind": "backslash"
+    },
+    {
+      "kind": "backslash"
+    },
+    " y estilos de texto. Esto para probar si la tokenización fucnionaba.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "El File System "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Cuando tokenizador crecio mucho, se separo la funcion principal en archivos con una sola responsabilidad porque seguir un flujo estaba complicado y el parseo asincrono aun que estaba bien porque podias ubicar en el codigo donde estaba, no era facil de seguir, porque hay dos puntos de ejecucion del step asi que se elimino el parseo asincrono.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Entornos "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Con esa base mas limpia, los entornos fueron lo primero en implementarse. ",
+    {
+      "kind": "monospace",
+      "content": [
+        "enumerate"
+      ]
+    },
+    " e ",
+    {
+      "kind": "monospace",
+      "content": [
+        "itemize"
+      ]
+    },
+    " fueron el primer soporte, En retrospectiva no fue la mejor idea porque estos entornos definen los elementos de su interior mediante ",
+    {
+      "kind": "backslash"
+    },
+    " item, entonces no tienes un cierre como tal, es un ",
+    {
+      "kind": "italic",
+      "content": [
+        "cierre implicito"
+      ]
+    },
+    ". Eso complica todo porque:",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "list",
+      "ordered": true,
+      "content": [
+        {
+          "kind": "item",
+          "content": [
+            "Detectar los items es buscar un comando particular "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "La anidación nativa "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            {
+              "kind": "list",
+              "ordered": true,
+              "content": [
+                {
+                  "kind": "item",
+                  "content": [
+                    "Si un entorno no cierra "
+                  ]
+                },
+                {
+                  "kind": "item",
+                  "content": [
+                    "Los demas fallaran "
+                  ]
+                }
+              ]
+            },
+            " "
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Pero si se integra bien, entonces en lugar de buscar directamente ",
+    {
+      "kind": "backslash"
+    },
+    " item, puedo usarlo para buscar otros elementos.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "list",
+      "ordered": false,
+      "content": [
+        {
+          "kind": "item",
+          "content": [
+            "Test de lista "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "Prueba con inline math ",
+            {
+              "kind": "math",
+              "mode": "inline",
+              "raw": "\\int 2x^{3y}"
+            },
+            " "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "Cierre implicito del anterior "
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Y permiten leer ecuaciones inline, asi que creo que al menos lo básico de una lista, funciona.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Contextos "
+      ],
+      "chapter_index": 3
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Ecuaciones"
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Aquí el problema es, cuando parseo, todo se categoriza, no se conoce el contexto, el orden o la posicion, solo se categoriza asi que una ecuacion nos llega a trozo. Y en un entorno de ecuaciones, no se permite otros entornos, al menos en lo simple, entonces llegamos al problema de como ",
+    {
+      "kind": "sansserif",
+      "content": [
+        "leer"
+      ]
+    },
+    " ecuaciones. Justo así, solo leemos, no procesamos ya que el texto deberá llegar tal cual al render. Creamos un parametro ",
+    {
+      "kind": "italic",
+      "content": [
+        "raw"
+      ]
+    },
+    " y este indica la lectura. Con ello obtendremos un entorno tal que:",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "math",
+      "mode": "display",
+      "raw": "E = mc^2"
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Y eso renderiza la ecuación, el texto llega fiel al arbol. La cuestion ahora es, ¿que sigue?",
+    {
+      "kind": "paragraph"
+    },
+    "El punto fuerte de LaTeX es la renderizacion matematica. Integrar cosas ",
+    {
+      "kind": "backslash"
+    },
+    " left(, no se hace de forma particular, puesto que es aprte del raw.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Comentarios "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Algo que pase por alto, fue agregar comentarios y en LaTeX se usa mucho, a veces para quitar elementos del resultado, otras veces como referencias. Agregarlo es facil por la funcionalidad que aplica, luego de % , todo hasta llegar a ",
+    {
+      "kind": "backslash"
+    },
+    " newline se ignora. Ya que esto no es un comando o entorno, lo podemos eliminar desde la categorizacion, eliminando el resto de la linea. As que no hay tanto problema.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Notas "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Despues de los entornos se agrego el comando ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "note"
+      },
+      "content": [
+        {
+          "kind": "backslash"
+        },
+        " note crea un tooltip que muestra contenido emergente"
+      ]
+    },
+    ", el primer elemento inline con custom de la libreria original con logica propia. La implementacion de las notas tuvo que corregirse despues: la posicion era relativa y eso rompia el flujo, cambiarla a absoluta lo resolvio. El siguiente problema fue restringir el contenido permitido dentro de una nota. Es decir, hasta ahora, no teniamos restricciones, una ecuación lee todo el contenido plano, asi que no importaba. En los primeros entornos no se agrego una limitacion debido a que recien se estaba creando la base del parser.",
+    {
+      "kind": "paragraph"
+    },
+    "Dentro de cada elemento se debe restringir el contenido que se puede escribir, ie, que pasa si dentro de una ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "nota"
+      },
+      "content": [
+        "Elemento flotante que sirve para agregar aclaraciones, referencias o incluso enlaces "
+      ]
+    },
+    " intentasemos agregar elementos como ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "equations"
+      },
+      "content": [
+        "Son elementos demaciado grandes que haria que una nota fuese muy grande"
+      ]
+    },
+    ", por ello, inline_only sirve para restringir esto",
+    {
+      "kind": "paragraph"
+    },
+    " ",
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Imagenes "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Otro de los elementos que obviamente debia integrar es el visualizar imagenes. Es importante que es un sitio web puedas verlas sin embargo, tenemos un problema, y es que estos comandos no deben parsear su contenido de forma recursiva, sino que se lee y llega plano al arbol, entonces significa que se debera parsear como un raw. Hay otros entornos que ya lo hacen.",
+    {
+      "kind": "paragraph"
+    },
+    "Se agrego el entorno de imagenes con ",
+    {
+      "kind": "monospace",
+      "content": [
+        "figure"
+      ]
+    },
+    ". El entorno envuelve ",
+    {
+      "kind": "backslash"
+    },
+    " includegraphics, que toma el ancho como argumento opcional, y ",
+    {
+      "kind": "backslash"
+    },
+    " caption para el pie. ",
+    {
+      "kind": "figure",
+      "content": [
+        {
+          "kind": "image",
+          "options": [
+            "80"
+          ],
+          "params": [
+            "img/topologia.png"
+          ]
+        },
+        " ",
+        {
+          "kind": "caption",
+          "content": [
+            "Prueba de imagen"
+          ]
+        },
+        " "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Ahora, algo que es muy importante es la estructura del folder del libro, puesto que poner imagenes por cualquier lado no es una buena practica. Actualmente el parser funciona bien, es estable y eso permite ya no solo intentar integrar malas practicas en las pruebas, sino que ya se puede pensar en establecer buenas practicas desde la lectura del ficher tex. Así que se recomendara y se indicara en la documentacion que la estructura del folder debera ser:",
+    {
+      "kind": "paragraph"
+    },
+    "book |-- main.tex |-- assets |-- pictures |-- domain",
+    {
+      "kind": "paragraph"
+    },
+    "Eso asegura que el folder este ordenado y mantengan una estrucuta estandar.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Custom components "
+      ],
+      "chapter_index": 4
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Bloques "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Para poder registrar nuevos elementos se expandio el sistema de registros. En ese commit se agrego soporte a ",
+    {
+      "kind": "backslash"
+    },
+    " backslash, saltos de linea con doble backslash, el entorno ",
+    {
+      "kind": "monospace",
+      "content": [
+        "block"
+      ]
+    },
+    " y caracteres especiales. Con esos nuevos registros disponibles, los bloques pudieron implementarse.",
+    {
+      "kind": "paragraph"
+    },
+    "La idea es mostrar distintas versiones de un contenido alternando entre ellas con botones. El primer intento fue un comando ",
+    {
+      "kind": "backslash"
+    },
+    " block { c1 } { c2 } { ... } pero la cantidad de subbloques es variable, lo que complicaba el registro y la deteccion del cierre. Usar items resulto ser la solucion mas pragmatica.",
+    {
+      "kind": "paragraph"
+    },
+    "Creamos ahora un bloque, que permite agrupar elementos y mostrarlos mediante botones: ",
+    {
+      "kind": "block",
+      "content": [
+        {
+          "kind": "item",
+          "content": [
+            "Son utiles para mostrar distintas demostraciones del mismo elemento. Por ejemplo, en Topologia se puede abordar desde 2 perspectirvas, por un lado usar metricas y por otro lado, el concepto de bolas. Creo que puede ser util no tratarlos de forma indistinta puesto que, aun que las ",
+            {
+              "kind": "note",
+              "params": {
+                "title": "bolas"
+              },
+              "content": [
+                "Una bola es un subconjunto de ",
+                {
+                  "kind": "math",
+                  "mode": "inline",
+                  "raw": "R^n"
+                }
+              ]
+            },
+            " aparecen como una consecuencia de tener una metrica, las bolas por si mismas tambien son un concepto que no necesariamente requeiren de tener definida una metrica. "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "Uno de los problemas al crear este entorno es la clara separacion de los distintos bloques.",
+            {
+              "kind": "paragraph"
+            },
+            " En primera instancia, se intento con un comando tipo ",
+            {
+              "kind": "backslash"
+            },
+            " block { c1 } { c2 } { ... Pero esto es un problema porque la cantidad de argumentos o \"subbloques\" es variable y eso hace que crear un registro se vuelva mas complejo y determinar el cierre tambien. "
+          ]
+        },
+        {
+          "kind": "item",
+          "content": [
+            "Si bien, no me agrada del todo usar items, es verdad que es mucho mas simple usar items e identaciones para organizar el codigo "
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Y los bloques a su vez, puede contener cualquier elemento que se requiera, tanto ecuaciones como imagenes, notas, etc.",
+    {
+      "kind": "paragraph"
+    },
+    "Y ahora integramos referencias. Esto se logro con un diccionario label: { id, index } , asi cuando se crea una nueva referencia, entonces tenemos la key y automaticamente, un contador. Los contadores formales aun no se agregan.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Referencias "
+      ],
+      "chapter_index": 5
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Se agrego la lista de referencias. Cada ",
+    {
+      "kind": "backslash"
+    },
+    " label genera una entrada en un diccionario ",
+    {
+      "kind": "monospace",
+      "content": [
+        "label: { id, index }"
+      ]
+    },
+    " con un contador automatico. Esto tambien implico un cambio en el output: ya no es un array sino un diccionario, pues las referencias viven como hermanos del arbol y no dentro del flujo del texto. Junto con esto, el parser se refactorizo en archivos de una sola responsabilidad.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "math",
+      "mode": "display",
+      "raw": "E = mc^2"
+    },
+    " ",
+    {
+      "kind": "label",
+      "id": "eq:einstein",
+      "index": 1
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Y se citan con ",
+    {
+      "kind": "backslash"
+    },
+    " ref { id } , ej, ",
+    {
+      "kind": "ref",
+      "target": "eq:einstein",
+      "index": 1
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Como se agregan al output como hermano del arbol, este ya no regresa un array sino un diccionario.",
+    {
+      "kind": "paragraph"
+    },
+    "Por fin se agregaron los custom components de la libreria original. Sin embargo, crear una retrocompatibilidad implico un cambio grande en dichas librerias.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 0,
+      "content": [
+        "Customs components "
+      ],
+      "chapter_index": 6
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Los custom components de la libreria original existian antes del parser, pero integrarlos requirio retrocompatibilidad, lo que implico cambios importantes. La decision fue dejar de tratarlos como comandos inline y convertirlos en entornos con key-value props. Asi, siguen la misma sintaxis que el parser ya conoce y el escritor no necesita aprender nada nuevo.",
+    {
+      "kind": "paragraph"
+    },
+    "En este punto, el core ya parsea la base de latex, se pueden integrar equaciones, listas, imagenes, referencias y algun elemento mas. Si bien, con esto ya se pueden crear documentos, tambien es cierto que una intencion de este \"parser\" es expandir LaTeX de una forma sencilla. Sin tener que aprender otra sintaxis y semantica, unicamente se agregan algunos comandos o componentes extras. Estos siguen la sintaxis de latex y como ya podemos leer y procesar la sintaxis de latex, la adaptacion del escritor a nuevos componentes es relativamente sencilla.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "axiom",
+      "content": [
+        "Los custom components dejaron de ser commands inline para ser ahora environments. Usando key value props. "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "axiom",
+      "params": {
+        "title": "Arquimedes",
+        "label": "ax-arq"
+      },
+      "content": [
+        "Para todo ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "x \\in \\N"
+        },
+        " existe ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "y \\in \\N"
+        },
+        " tal que ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "y > x"
+        },
+        ". "
+      ],
+      "id": "ax-arq",
+      "index": 2
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "theorem",
+      "params": {
+        "title": "Bolzano-Weierstrass"
+      },
+      "content": [
+        "Toda sucesion acotada en ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "\\R^n"
+        },
+        " tiene una subsucesion convergente. "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "definition",
+      "params": {
+        "title": "Espacio metrico",
+        "label": "def-met"
+      },
+      "content": [
+        "Un espacio metrico es un par ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "(X, d)"
+        },
+        " donde ... "
+      ],
+      "id": "def-met",
+      "index": 3
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "proof",
+      "content": [
+        "Sea ",
+        {
+          "kind": "math",
+          "mode": "inline",
+          "raw": "\\epsilon > 0"
+        },
+        " ... ",
+        {
+          "kind": "qed"
+        },
+        " "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "exercise",
+      "params": {
+        "label": "ej-1"
+      },
+      "content": [
+        "Demuestre que ... "
+      ],
+      "id": "ej-1",
+      "index": 4
+    },
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Capitulos "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "Se creo soporte para capitulos y secciones. Sin esto, todo el contenido vive en un solo nivel y no es posible crear una tabla de contenido ni anclas de navegacion. Es algo fundamental para documentos largos como libros o apuntes.",
+    {
+      "kind": "paragraph"
+    },
+    "En este punto, se integran las secciones y capitulos. Algo esencial al momento de escribir documentos largos (libros, notas). Esto permite separar el contenido en agrupaciones con informacion relacionada. A su vez, nos permite crear una lista de capitulos para crear referencias y permitir al usuario viajar rapido entre contenido.",
+    {
+      "kind": "paragraph"
+    },
+    {
+      "kind": "heading",
+      "level": 2,
+      "content": [
+        "Mas estilos "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    "[ 16 / Mar ] En este punto, el parser parece estable, es decir, lo basico funciona, no parece tener problemas en identificar la profundidad. Y algo que noté, es que a pesar de ya tener una base decente muchos de los documentos se pueden romper puesto que aun no tengo muchos comandos incluidos y que se suelen usar mucho.",
+    {
+      "kind": "paragraph"
+    },
+    "Pero integrarlos no es muy ",
+    {
+      "kind": "bold",
+      "content": [
+        "complicado "
+      ]
+    },
+    " puesto que ya solo debo ",
+    {
+      "kind": "smallcaps",
+      "content": [
+        "REGISTRARLOS "
+      ]
+    },
+    " y el parser ya conoce como debe tratarlos. ",
+    {
+      "kind": "monospace",
+      "content": [
+        "Significa"
+      ]
+    },
+    " que puedo mejorar la compatibilidad con gran parte de los documentos sencillos. Ahorita integré estilos de texto, tambien agregue urls [ ",
+    {
+      "kind": "url",
+      "params": [
+        "https://cris0501.github.io/library/doc"
+      ]
+    },
+    " ] aunque es muy similar a como se crean las referencias. En cuanto a LaTeX, la estructura es de un comando.",
+    {
+      "kind": "paragraph"
+    },
+    "Yo creo que integrare el soporte para grupos y quizá ahí detenga el ",
+    {
+      "kind": "bold",
+      "content": [
+        "DESARROLLO "
+      ]
+    },
+    " pues ya podria comenzar a pasar algunas notas antes de agregar mas features, pues solo el puro parser requiere mucho tiempo mas para crear un ",
+    {
+      "kind": "monospace",
+      "content": [
+        "expansor"
+      ]
+    },
+    " de macros como lo es LaTeX.",
+    {
+      "kind": "paragraph"
+    },
+    "Hoy he decidido cambiar este ",
+    {
+      "kind": "italic",
+      "content": [
+        "Fichero "
+      ]
+    },
+    ", anteriormente el contenido no tenia sentido, solo probaba las features que integraba pero ahora que ya lee correctamente la estructura de un texto, el contenido puedo cambiarlo y este no se romperá.",
+    {
+      "kind": "paragraph"
+    },
+    " "
+  ],
+  "refs": {
+    "eq:einstein": {
+      "index": 1
+    },
+    "ax-arq": {
+      "index": 2
+    },
+    "def-met": {
+      "index": 3
+    },
+    "ej-1": {
+      "index": 4
+    }
+  },
+  "chapters": {
+    "chapter:1": {
+      "index": 1,
+      "title": "Inicio"
+    },
+    "chapter:2": {
+      "index": 2,
+      "title": "Tokens como en la IA"
+    },
+    "chapter:3": {
+      "index": 3,
+      "title": "Contextos"
+    },
+    "chapter:4": {
+      "index": 4,
+      "title": "Custom components"
+    },
+    "chapter:5": {
+      "index": 5,
+      "title": "Referencias"
+    },
+    "chapter:6": {
+      "index": 6,
+      "title": "Customs components"
+    }
+  }
+}

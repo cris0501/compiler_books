@@ -57,6 +57,9 @@ COMMANDS: dict[str, dict] = {
     '\\qed':        {'produces': 'qed',          'self_closing': True},
     '\\obs':        {'produces': 'observation',  'self_closing': True},
     '\\dem':        {'produces': 'proof-mark',   'self_closing': True},
+    
+    # -- Custom components ordinaries
+    '\\alert':     {'produces': 'alert', 'args': 1},
 
     # -- Custom esfm (key-value en [], contenido en {}) --
     '\\note': {'produces': 'note', 'args': 1, 'kv': True, 'inline_only': True},
@@ -83,5 +86,6 @@ ENVIRONMENTS: dict[str, dict] = {
     'proof':       {'produces': 'proof',       'kv': True},
     'block':       {'produces': 'block',       'kv': True},
 }
+
 
 

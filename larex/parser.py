@@ -69,7 +69,8 @@ class Parser:
             if not text:
                 return
             if target and isinstance(target[-1], str):
-                target[-1] += ' ' + text
+                sep = '' if target[-1].endswith(' ') else ' '
+                target[-1] += sep + text
             else:
                 target.append(text)
         else:
@@ -89,19 +90,30 @@ class Parser:
     def step(self):
         tok = self.consume()
         match tok.kind:
-            case 'COMMAND':           self._dispatch_command(tok.value)
-            case 'MATH_BLOCK':        handle_math(self, '$$')
-            case 'MATH_INLINE':       handle_math(self, '$')
-            case 'CLOSE_BRACE' | 'CLOSE_BRACKET':
+            case 'COMMAND':                          self._dispatch_command(tok.value)
+            case 'MATH_BLOCK':                       handle_math(self, '$$')
+            case 'MATH_INLINE':                      handle_math(self, '$')
+            case 'DISPLAY_MATH_OPEN':                handle_math(self, '\\[')
+            case 'DISPLAY_MATH_CLOSE':               pass
+            case 'PARAGRAPH':                        self.add_node({'kind': 'paragraph'})
+            case 'DOUBLE_BACKSLASH':                 self.add_node({'kind': 'newline'})
+            case 'ESCAPED_CHAR':                     self.add_node(tok.value[1])
+            case 'OPEN_BRACKET' | 'CLOSE_BRACKET':   self.add_node(tok.value)
+            case 'WHITESPACE':
+                target = self.target()
+                if target:
+                    if isinstance(target[-1], str):
+                        if not target[-1].endswith(' '):
+                            target[-1] += ' '
+                    elif isinstance(target[-1], dict):
+                        target.append(' ')
+            case 'CLOSE_BRACE':
                 if len(self.stack) <= 1:
                     raise SyntaxError(f"'{tok.value}' inesperado: no hay bloque abierto{self._at()}")
                 if self.frame['closer'] != tok.value:
                     raise SyntaxError(f"Se esperaba '{self.frame['closer']}', se encontró '{tok.value}'{self._at()}")
                 self.stack.pop()
-            case 'PARAGRAPH':         self.add_node({'kind': 'paragraph'})
-            case 'DOUBLE_BACKSLASH':  self.add_node({'kind': 'newline'})
-            case 'ESCAPED_CHAR':      self.add_node(tok.value)
-            case 'OPEN_BRACE' | 'OPEN_BRACKET':
+            case 'OPEN_BRACE':
                 raise SyntaxError(f"'{tok.value}' inesperado sin comando previo{self._at()}")
             case 'TEXT':
                 if self.frame['context'] == 'parameter':
@@ -133,4 +145,6 @@ def compile_tex(src: str) -> dict:
         'refs': parser.refs,
         'chapters': parser.chapters,
     }
+
+
 
