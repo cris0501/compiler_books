@@ -23,7 +23,7 @@ Notas:
   - raw aplica al cuerpo de un environment
 
 Custom
-\comando[key1=val1, key2=val2]{contenido}
+\ comando[key1=val1, key2=val2]{contenido}
          \___ un solo [] ____/\_ args _/
 Vanilla
 \comando[opt1][opt2]{arg1}{arg2}
@@ -70,6 +70,7 @@ ENVIRONMENTS: dict[str, dict] = {
     'enumerate': {'produces': 'list',   'extra': {'ordered': True}, 'opt_args': 1},
     'itemize':   {'produces': 'list',   'extra': {'ordered': False}},
     'figure':    {'produces': 'figure', 'opt_args': 1},
+    'verbatim':  {'produces': 'verbatim', 'raw': True},
 
     # -- Raw: el cuerpo se recolecta como texto plano --
     'equation': {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},

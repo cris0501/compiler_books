@@ -132,3 +132,4 @@ def _register_label(p, node: dict, kv: dict):
     node['id'] = label_id
     node['index'] = p.label_counter
 
+
