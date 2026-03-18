@@ -882,6 +882,53 @@
     " A partir de este momento, empezare a pasar algunas notas, hare uno o dos books como ejemplo, sin embargo, el tiempo que esto me llevara sera tanto que lo mas probable sea que no concluya todo, es por ello que espero que a la comunidad le interese el proyecto y pueda sumar algun aporte.",
     {
       "kind": "paragraph"
+    },
+    " ",
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Modificadores"
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    " Los ",
+    {
+      "kind": "note",
+      "params": {
+        "title": "modificadores"
+      },
+      "content": [
+        "Elementos que alteran al elemento padre "
+      ]
+    },
+    ", lo integre y funciona, pero qu el los uso pocos son los que usan modificadores de estilo por lo que los integrare solo si se necesita. Ahorita importa otro cambio.",
+    {
+      "kind": "paragraph"
+    },
+    " ",
+    {
+      "kind": "heading",
+      "level": 1,
+      "content": [
+        "Metadata de un documento "
+      ]
+    },
+    {
+      "kind": "paragraph"
+    },
+    " La ",
+    {
+      "kind": "bold",
+      "content": [
+        "metadata"
+      ]
+    },
+    " se refiere a la informacion relacionada con el mismo fichero, es decir, las dependencias que tiene, el tipo de documento, configuraciones, etc. Es importante para crear un catalogo que pueda leer esa informacion de forma automatica.",
+    {
+      "kind": "paragraph"
     }
   ],
   "refs": {
@@ -919,5 +966,8 @@
       "index": 5,
       "title": "Capitulos y estilos"
     }
+  },
+  "meta": {
+    "documentclass": "article"
   }
 }
