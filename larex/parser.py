@@ -11,6 +11,7 @@ from .handlers import (
     handle_command, handle_begin, handle_end,
     handle_math, handle_item, handle_label, handle_ref,
 )
+from .consume import _resolve_includes
 
 
 class Parser:
@@ -136,7 +137,8 @@ class Parser:
         return self.tree
 
 
-def compile_tex(src: str) -> dict:
+def compile_tex(src: str, base_path: str = '.') -> dict:
+    src = _resolve_includes(src, base_path)
     src = re.sub(r'(?<!\\)%.*', '', src)
     parser = Parser(tokenize(src))
     tree = parser.run()
@@ -145,6 +147,7 @@ def compile_tex(src: str) -> dict:
         'refs': parser.refs,
         'chapters': parser.chapters,
     }
+
 
 
 

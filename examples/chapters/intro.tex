@@ -1,0 +1,43 @@
+\chapter{ Inicio }
+
+\section{ Primeras ideas }
+
+Este proyecto nacio de querer entender como se crea un lenguaje, como se define
+y se consume su sintaxis. De ahi surgen preguntas naturales como ¿por que
+hay diferencia de velocidad entre lenguajes?
+
+La respuesta directa es que depende de si es compilado o interpretado, pero
+la pregunta real es otra: ¿por que optaron por ese diseño y como cambia el
+funcionamiento del compilador?
+
+La primera idea fue parsear con \note[expresiones regulares]{Patrones para identificar
+y capturar texto} buscando estructuras tipo \backslash command\{.*\}\{.*(Contenido)\}.
+Al inicio parece util, pero al anidar comandos el regex falla: el \} del comando
+interior tambien cierra al superior. Se puede llevar un contador de \textbf{profundidad},
+pero la expresion crece rapido y en entornos se pone peor pues ya se necesitan
+funciones extra para extraer el contenido hasta el cierre.
+
+\section{ Otras alternativas }
+
+Probe con \note[Lark]{Herramienta para parseo y analisis gramatico} pero las 
+anidaciones tampoco funcionaban de forma clara.
+La siguiente idea fue trabajar caracter a caracter: acumular hasta encontrar
+un caracter especial y reaccionar segun el contexto.
+
+El problema es que el contexto complica todo. Un \{ en modo matematico es un
+literal, no una accion. Eso genera demasiadas validaciones. Es como resolver
+2+2 mediante union de conjuntos: mucho control para algo que podia ser simple.
+
+\section{ Pausa }
+
+Con esos intentos sin resultado claro, detuve el proyecto. No habia una version
+\note[estable]{Una que compilara al menos el documento mas basico} lista.
+Algunos estudiantes me contactaron para apoyar, les agradeci pero sin un
+parser estable la estructura podia cambiar en meses y
+
+\alert{ pudiera pasar que este proyecto se abandonara. }
+
+Meses despues me someti a una cirugia, nada complicado pero que me brindo unos
+dias de reposo y fue durante este tiempo que se me ocurrio continuar con este
+proyecto, previamente abandonado.
+

@@ -5,6 +5,9 @@ Sin semantica, solo lectura mecanica del stream de tokens.
 Cada funcion recibe el parser (p) para acceder al stream
 y sus utilidades de lectura.
 """
+import os
+import re
+import sys
 
 
 def consume_brace_block(p, node: dict, context: str, inline_only: bool = False):
@@ -140,3 +143,24 @@ def skip_brace_args(p):
             elif kind == 'CLOSE_BRACE':
                 depth -= 1
             p.pos += 1
+
+
+def _resolve_includes(src: str, base_path: str) -> str:
+    """Reemplaza \\include{archivo} con el contenido del archivo."""
+    pattern = re.compile(r'\\include\{([^}]+)\}')
+
+    def replacer(match):
+        filename = match.group(1)
+        if not filename.endswith('.tex'):
+            filename += '.tex'
+        filepath = os.path.join(base_path, filename)
+        try:
+            with open(filepath) as f:
+                child = f.read()
+            # Recursivo: el archivo incluido puede tener sus propios \include
+            return _resolve_includes(child, os.path.dirname(filepath))
+        except FileNotFoundError:
+            print(f"Warning: archivo no encontrado '{filepath}'", file=sys.stderr)
+            return ''
+
+    return pattern.sub(replacer, src)

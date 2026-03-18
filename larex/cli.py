@@ -8,37 +8,51 @@ Uso:
 
 import sys
 import json
+import os
+import re
 
 from .parser import compile_tex
+from .consume import _resolve_includes
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Uso: python -m larex <archivo.tex> [-o salida.json]", file=sys.stderr)
+        print("Uso: python -m larex <archivo.tex> [-f save in dist]", file=sys.stderr)
         sys.exit(1)
 
     path = sys.argv[1]
+    base_path = os.path.dirname(os.path.abspath(path))
 
     # Salida: -o archivo.json o stdout
     out_path = None
-    if '-o' in sys.argv:
-        idx = sys.argv.index('-o')
-        if idx + 1 < len(sys.argv):
-            out_path = sys.argv[idx + 1]
+    if '-f' in sys.argv:
+        os.makedirs('examples/dist', exist_ok=True)
+        name = os.path.splitext(os.path.basename(path))[0]
+        out_path = f'examples/dist/{name}.json'
+
+        # Guardar el tex resuelto (con includes inyectados, sin comentarios)
+        with open(path) as f:
+            raw = f.read()
+        resolved = _resolve_includes(raw, base_path)
+        resolved = re.sub(r'(?<!\\)%.*', '', resolved)
+        with open(f'examples/dist/{name}.tex', 'w') as f:
+            f.write(resolved)
+        print(f"-> examples/dist/{name}.tex", file=sys.stderr)
 
     with open(path) as f:
-        ast = compile_tex(f.read())
+        ast = compile_tex(f.read(), base_path=os.path.dirname(os.path.abspath(path)))
 
     result = json.dumps(ast, indent=2, ensure_ascii=False)
 
     if out_path:
         with open(out_path, 'w') as f:
             f.write(result)
-        print(f"→ {out_path}", file=sys.stderr)
+        print(f"-> {out_path}", file=sys.stderr)
     else:
         print(result)
 
 
 if __name__ == '__main__':
     main()
+
 
