@@ -31,7 +31,7 @@ class Parser:
     def frame(self):
         return self.stack[-1]
 
-    # ── Utilidades de lectura ──
+    # -- Utilidades de lectura --
 
     def _at(self) -> str:
         if self.last_tok is not None:
@@ -57,7 +57,7 @@ class Parser:
             raise SyntaxError(f"Se esperaba {kind}, se encontró {tok.kind!r} ({tok.value!r}){self._at()}")
         return tok.value
 
-    # ── AST ──
+    # -- AST --
 
     def target(self) -> list:
         node = self.frame['node']
@@ -77,7 +77,7 @@ class Parser:
         else:
             target.append(node)
 
-    # ── Dispatch ──
+    # -- Dispatch --
 
     def _dispatch_command(self, cmd: str):
         match cmd:
@@ -115,7 +115,9 @@ class Parser:
                     raise SyntaxError(f"Se esperaba '{self.frame['closer']}', se encontró '{tok.value}'{self._at()}")
                 self.stack.pop()
             case 'OPEN_BRACE':
-                raise SyntaxError(f"'{tok.value}' inesperado sin comando previo{self._at()}")
+                node = {'kind': 'group', 'content': []}
+                self.add_node(node)
+                self.stack.append({'node': node, 'context': 'content', 'closer': '}'})
             case 'TEXT':
                 if self.frame['context'] == 'parameter':
                     self.frame['node']['params'].append(tok.value.strip())
@@ -138,16 +140,61 @@ class Parser:
 
 
 def compile_tex(src: str, base_path: str = '.') -> dict:
+    """ Funcion inicial """
     src = _resolve_includes(src, base_path)
     src = re.sub(r'(?<!\\)%.*', '', src)
-    parser = Parser(tokenize(src))
+
+    preamble, body = _split_document(src)
+    meta = _parse_preamble(preamble)
+
+    parser = Parser(tokenize(body))
     tree = parser.run()
-    return {
-        'content': tree,
-        'refs': parser.refs,
-        'chapters': parser.chapters,
-    }
+
+    result = {'content': tree}
+    if parser.refs:
+        result['refs'] = parser.refs
+    if parser.chapters:
+        result['chapters'] = parser.chapters
+    if meta:
+        result['meta'] = meta
+    return result
+
+def _split_document(src: str) -> tuple[str, str]:
+    """ Separa preámbulo y cuerpo del documento """
+    begin = re.search(r'\\begin\{document\}', src)
+    end = re.search(r'\\end\{document\}', src)
+
+    if begin and end:
+        preamble = src[:begin.start()]
+        body = src[begin.end():end.start()]
+        return preamble, body
+
+    # Sin \begin{document}: todo es cuerpo (compatibilidad con tex simples)
+    return '', src
 
 
+def _parse_preamble(preamble: str) -> dict:
+    """ Extrae metadata del preámbulo """
+    if not preamble:
+        return {}
 
+    meta = {}
 
+    # documentclass
+    dc = re.search(r'\\documentclass(?:\[([^\]]*)\])?\{([^}]+)\}', preamble)
+    if dc:
+        meta['documentclass'] = dc.group(2)
+        if dc.group(1):
+            meta['documentclass_options'] = dc.group(1)
+
+    # usepackage
+    packages = re.findall(r'\\usepackage(?:\[([^\]]*)\])?\{([^}]+)\}', preamble)
+    if packages:
+        meta['dependencies'] = []
+        for opts, name in packages:
+            dep = {'name': name}
+            if opts:
+                dep['options'] = opts
+            meta['dependencies'].append(dep)
+
+    return meta

@@ -58,35 +58,39 @@ COMMANDS: dict[str, dict] = {
     '\\obs':        {'produces': 'observation',  'self_closing': True},
     '\\dem':        {'produces': 'proof-mark',   'self_closing': True},
     
+    # Groups or modifiers
+    '\\bfseries':   {'modifier': 'bold', 'self_closing': True},
+    
     # -- Custom components ordinaries
-    '\\alert':     {'produces': 'alert', 'args': 1},
+    '\\alert':      {'produces': 'alert', 'args': 1},
 
     # -- Custom esfm (key-value en [], contenido en {}) --
-    '\\note': {'produces': 'note', 'args': 1, 'kv': True, 'inline_only': True},
+    '\\note':       {'produces': 'note', 'args': 1, 'kv': True, 'inline_only': True},
 }
 
 ENVIRONMENTS: dict[str, dict] = {
     # -- LaTeX estandar (posicional) --
-    'enumerate': {'produces': 'list',   'extra': {'ordered': True}, 'opt_args': 1},
-    'itemize':   {'produces': 'list',   'extra': {'ordered': False}},
-    'figure':    {'produces': 'figure', 'opt_args': 1},
-    'verbatim':  {'produces': 'verbatim', 'raw': True},
+    'enumerate':    {'produces': 'list',   'extra': {'ordered': True}, 'opt_args': 1},
+    'itemize':      {'produces': 'list',   'extra': {'ordered': False}},
+    'figure':       {'produces': 'figure', 'opt_args': 1},
+    'verbatim':     {'produces': 'verbatim', 'raw': True},
 
     # -- Raw: el cuerpo se recolecta como texto plano --
-    'equation': {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    'equation':     {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
 
     # -- Custom esfm (key-value: label, title) --
-    'definition':  {'produces': 'definition',  'kv': True},
-    'axiom':       {'produces': 'axiom',       'kv': True},
-    'theorem':     {'produces': 'theorem',     'kv': True},
-    'lemma':       {'produces': 'lemma',       'kv': True},
-    'proposition': {'produces': 'proposition', 'kv': True},
-    'corollary':   {'produces': 'corollary',   'kv': True},
-    'exercise':    {'produces': 'exercise',    'kv': True},
-    'convention':  {'produces': 'convention',  'kv': True},
-    'proof':       {'produces': 'proof',       'kv': True},
-    'block':       {'produces': 'block',       'kv': True},
+    'definition':   {'produces': 'definition',  'kv': True},
+    'axiom':        {'produces': 'axiom',       'kv': True},
+    'theorem':      {'produces': 'theorem',     'kv': True},
+    'lemma':        {'produces': 'lemma',       'kv': True},
+    'proposition':  {'produces': 'proposition', 'kv': True},
+    'corollary':    {'produces': 'corollary',   'kv': True},
+    'exercise':     {'produces': 'exercise',    'kv': True},
+    'convention':   {'produces': 'convention',  'kv': True},
+    'proof':        {'produces': 'proof',       'kv': True},
+    'block':        {'produces': 'block',       'kv': True},
 }
+
 
 
 

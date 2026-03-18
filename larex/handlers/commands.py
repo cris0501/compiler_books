@@ -19,6 +19,13 @@ def handle_command(p, cmd: str):
         skip_brace_args(p)
         return
 
+    if props.get('modifier'):
+      if p.frame['node'] != p.tree: # Seguridad del root
+          node = p.frame['node']
+          if isinstance(node, dict) and node.get('kind') == 'group':
+              node['kind'] = props['modifier']
+      return
+
     if props.get('self_closing'):
         _self_closing(p, props)
     elif props.get('raw_args'):
@@ -97,4 +104,6 @@ def _register_chapter(p, node: dict):
         'title': title.strip(),
     }
     node['chapter_index'] = p.chapter_counter
+
+
 
