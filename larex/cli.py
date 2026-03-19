@@ -10,6 +10,7 @@ import sys
 import json
 import os
 import re
+import shutil
 
 from .parser import compile_tex
 from .consume import resolve_includes
@@ -45,16 +46,22 @@ def main():
         result = json.dumps(ast, ensure_ascii=False, separators=(',', ':'))
 
     if '-f' in sys.argv:
-        os.makedirs('examples/dist', exist_ok=True)
+        os.makedirs(base_path+'/dist', exist_ok=True)
         name = os.path.splitext(os.path.basename(path))[0]
 
-        with open(f'examples/dist/{name}.tex', 'w') as f:
+        with open(f'{base_path}/dist/{name}.tex', 'w') as f:
             f.write(resolved)
-        print(f"-> examples/dist/{name}.tex", file=sys.stderr)
+        print(f"-> {base_path}/dist/{name}.tex", file=sys.stderr)
 
-        with open(f'examples/dist/{name}.json', 'w') as f:
+        with open(f'{base_path}/dist/{name}.json', 'w') as f:
             f.write(result)
-        print(f"-> examples/dist/{name}.json", file=sys.stderr)
+        print(f"-> {base_path}/dist/{name}.json", file=sys.stderr)
+
+        assets_src = os.path.join(base_path, 'assets')
+        if os.path.isdir(assets_src):
+            assets_dst = os.path.join(base_path, 'dist', 'assets')
+            shutil.copytree(assets_src, assets_dst, dirs_exist_ok=True)
+            print(f"-> {assets_dst}", file=sys.stderr)
     else:
         print(result)
 
