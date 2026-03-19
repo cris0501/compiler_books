@@ -77,6 +77,9 @@ ENVIRONMENTS: dict[str, dict] = {
 
     # -- Raw: el cuerpo se recolecta como texto plano --
     'equation':     {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    'align':        {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    'cases':        {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    'pmatrix':      {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
 
     # -- Custom esfm (key-value: label, title) --
     'definition':   {'produces': 'definition',  'kv': True},
@@ -90,7 +93,4 @@ ENVIRONMENTS: dict[str, dict] = {
     'proof':        {'produces': 'proof',       'kv': True},
     'block':        {'produces': 'block',       'kv': True},
 }
-
-
-
 
