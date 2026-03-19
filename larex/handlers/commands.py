@@ -78,6 +78,15 @@ def _node(p, props: dict):
             break
         node.setdefault('options', []).append(opt)
 
+    if props.get('slots'):
+        node['slots'] = []
+        for _ in range(props['slots']):
+            slot = []
+            node['slots'].append(slot)
+            consume_brace_block(p, slot, 'content')
+        p.add_node(node)
+        return
+
     node['content'] = []
     p.add_node(node)
 

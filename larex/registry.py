@@ -66,6 +66,9 @@ COMMANDS: dict[str, dict] = {
 
     # -- Custom esfm (key-value en [], contenido en {}) --
     '\\note':       {'produces': 'note', 'args': 1, 'kv': True, 'inline_only': True},
+
+    # -- Layout --
+    '\\join':       {'produces': 'join', 'slots': 2},
 }
 
 ENVIRONMENTS: dict[str, dict] = {
@@ -75,6 +78,7 @@ ENVIRONMENTS: dict[str, dict] = {
     'figure':       {'produces': 'figure', 'opt_args': 1},
     'verbatim':     {'produces': 'verbatim', 'raw': True},
     'tabular':      {'produces': 'table', 'table': True},
+    'minipage':     {'produces': 'minipage', 'opt_args': 1, 'raw_arg': True},
 
     # -- Raw: el cuerpo se recolecta como texto plano --
     'equation':     {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},

@@ -50,12 +50,18 @@ def handle_begin(p):
                 break
             opts.append(opt)
 
+    # -- Mandatory raw arg (e.g. minipage{width}) consumed before body --
+    raw_arg = consume_raw_brace(p) if props.get('raw_arg') else None
+
     # -- Raw environments (equation, etc.) --
     if props.get('raw'):
         raw = consume_raw_until_end(p, name)
         node = {'kind': props['produces']}
         node.update(props.get('extra', {}))
-        node['raw'] = raw
+        if props['produces'] == 'math' and name != 'equation':
+            node['raw'] = f'\\begin{{{name}}}{raw}\\end{{{name}}}'
+        else:
+            node['raw'] = raw
         if kv:
             node['params'] = kv
         if opts:
@@ -70,6 +76,8 @@ def handle_begin(p):
         node['params'] = kv
     if opts:
         node['options'] = opts
+    if raw_arg is not None:
+        node['arg'] = raw_arg
     node['content'] = []
 
     # -- Register reference --
@@ -102,7 +110,7 @@ def handle_end(p):
 
 
 def _collect_until_end(p, name: str) -> str:
-    """
+    r"""
         Lee contenido hasta cerrar bloque
         \begin { equation }
             raw

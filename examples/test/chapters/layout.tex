@@ -1,0 +1,38 @@
+  \chapter { Layout }
+
+  \section{ Visual }
+
+  Empece a transcribir las notas de lógica y note que el layout del libro es muy pobre,
+  es decir, renderiza bien pero dado que visualmente esta mas cargado que un PDF de
+  LaTeX se ve mal. Es decir, los bloques o cajas se expanden y quizá, una tabla que
+  solo ocupa un cuarto de pagina se visualiza abajo, centrada. En un PDF esto no se
+  ve mal pero en un webbook cuya intención es extender un poco las funciones de LaTeX,
+  queda algo incomodo de ver.
+
+  Para ello, surge la necesidad de integrar minipages. Intencionalmente se creo un
+  alias, \backslash join, este lee dos bloques de argumentos, pero esto implica
+  crear mas entornos, comandos nuevos lo cual hace que el escritor deba memorizar
+  mas cosas, es por ello que priorisando LaTeX puro o vanilla es que decidí integrar
+  el entorno \texttt{minipage}. Y con ello, al finalizar el arbol, un proceso que
+  lee cada nodo y si encuentra dos minipages juntas, las envuelve en un wrapper
+  join, que es directamente mas sencillo de leer desde JS.
+
+  \begin{minipage}[t]{0.48\textwidth}
+    \begin{axiom}[title=Doble negación]
+      $\lnot\lnot p \equiv p$
+    \end{axiom}
+  \end{minipage}\hfill
+
+  \begin{minipage}[t]{0.48\textwidth}
+    \begin{tabular}{cc}
+      Head & table \\
+      \hline
+      Una & tabla \\
+      que & se pega
+    \end{tabular}
+  \end{minipage}
+
+  Este es un ejemplo, aun que no habia contemplado el layout, creo que seria importante
+  no solo parsear latex sino permitir que el webbook pueda ofrecer mas flexibilidad
+  al momento de ordenar los elementos.
+

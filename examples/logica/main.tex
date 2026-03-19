@@ -26,11 +26,14 @@
 
   \subsection{Conjunción}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{definition}[title={Conjunción}]
   El conector $p \land q$ solo permite el par ordenado $(V, V)$ y excluye
   al resto.
   \end{definition}
+  \end{minipage}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{tabular}{c|c|c}
   $p$ & $q$ & $p \land q$ \\
   \hline
@@ -39,6 +42,7 @@
   F & V & F \\
   F & F & F \\
   \end{tabular}
+  \end{minipage}
 
   De este modo, podemos probar la conjunción como verdad por una prueba
   directa. Para probar que es falsa, basta probar un contraejemplo:
@@ -50,10 +54,13 @@
 
   \subsection{Disyunción}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{definition}[title={Disyunción}]
   Para el conector $p \lor q$ únicamente se excluye $(F, F)$.
   \end{definition}
+  \end{minipage}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{tabular}{c|c|c}
   $p$ & $q$ & $p \lor q$ \\
   \hline
@@ -62,6 +69,7 @@
   F & V & V \\
   F & F & F \\
   \end{tabular}
+  \end{minipage}
 
   Dado que la lógica no funciona por enumeración, la forma correcta es
   por exclusión del contraejemplo, así basta probar que ocurre:
@@ -72,6 +80,7 @@
 
   \subsection{Implicación}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{definition}[title={Implicación}]
   En lógica proposicional no se busca describir el mundo físico, es decir,
   la lógica no entiende causalidad ni temporalidad, sino que son un
@@ -80,7 +89,9 @@
   secuencial, sino que cada uno tiene su valor. La única exclusión que
   tiene es el caso $(V, F)$.
   \end{definition}
+  \end{minipage}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{tabular}{c|c|c}
   $p$ & $q$ & $p \to q$ \\
   \hline
@@ -89,6 +100,7 @@
   F & V & V \\
   F & F & V \\
   \end{tabular}
+  \end{minipage}
 
   Dicho de otra forma, si $p$ es falso, significa que la hipótesis no se
   cumple, por tanto no hace falta evaluar el valor de $q$. La regla de
@@ -121,6 +133,7 @@
 
   \subsection{Bicondicional}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{definition}[title={Bicondicional}]
   $p \leftrightarrow q$ es verdad cuando $p$ y $q$ tienen el mismo valor
   de verdad en todas las interpretaciones, es decir:
@@ -128,7 +141,9 @@
   p \leftrightarrow q \equiv (p \to q) \land (q \to p)
   \end{equation}
   \end{definition}
+  \end{minipage}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{tabular}{c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $q \to p$ & $(p \to q) \land (q \to p)$ \\
   \hline
@@ -137,6 +152,7 @@
   V & F & F & V & F \\
   F & F & V & V & V \\
   \end{tabular}
+  \end{minipage}
 
   De forma que es verdadera cuando coinciden $p$ y $q$, así:
 
@@ -194,6 +210,7 @@
 
   \subsection{Contraposición}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{definition}[title={Contraposición}]
   Se parece mucho a equivalencia: si se asume que $q$ es $F$, entonces
   $p$ también debe serlo, pues la implicación excluye el caso en que $p$
@@ -202,7 +219,9 @@
   p \to q \equiv \sim q \to \sim p
   \end{equation}
   \end{definition}
+  \end{minipage}
 
+  \begin{minipage}[t]{0.48\textwidth}
   \begin{tabular}{c|c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $\sim p$ & $\sim q$ & $\sim q \to \sim p$ \\
   \hline
@@ -211,6 +230,7 @@
   F & V & V & V & F & V \\
   F & F & V & V & V & V \\
   \end{tabular}
+  \end{minipage}
 
   Para este punto, el cómo se aborda una proposición de equivalencia es
   que en una demostración, se trata de probar que el caso de exclusión

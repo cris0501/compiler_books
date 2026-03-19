@@ -148,6 +148,8 @@ def compile_tex(src: str, base_path: str = '.') -> dict:
     parser = Parser(tokenize(body))
     tree = parser.run()
 
+    tree = _wrap_minipage_pairs(tree)
+
     result = {'content': tree}
     if parser.refs:
         result['refs'] = parser.refs
@@ -156,6 +158,52 @@ def compile_tex(src: str, base_path: str = '.') -> dict:
     if meta:
         result['meta'] = meta
     return result
+
+def _wrap_minipage_pairs(content: list) -> list:
+    """Agrupa pares consecutivos de minipage en un nodo join con slots."""
+    result = []
+    i = 0
+    while i < len(content):
+        node = content[i]
+
+        # Recurse into any content-bearing node first
+        if isinstance(node, dict) and 'content' in node:
+            node['content'] = _wrap_minipage_pairs(node['content'])
+
+        if isinstance(node, dict) and node.get('kind') == 'minipage':
+            j = _next_minipage(content, i + 1)
+            if j != -1:
+                right = content[j]
+                if isinstance(right, dict) and 'content' in right:
+                    right['content'] = _wrap_minipage_pairs(right['content'])
+                result.append({
+                    'kind': 'join',
+                    'slots': [node.get('content', []), right.get('content', [])],
+                })
+                i = j + 1
+                continue
+
+        result.append(node)
+        i += 1
+    return result
+
+
+def _next_minipage(content: list, start: int) -> int:
+    """Devuelve el índice del próximo minipage saltando whitespace. -1 si no hay o si hay contenido no-whitespace antes."""
+    i = start
+    while i < len(content):
+        item = content[i]
+        if isinstance(item, str) and item.strip() == '':
+            i += 1
+            continue
+        if isinstance(item, dict) and item.get('kind') == 'paragraph':
+            i += 1
+            continue
+        if isinstance(item, dict) and item.get('kind') == 'minipage':
+            return i
+        return -1
+    return -1
+
 
 def _split_document(src: str) -> tuple[str, str]:
     """ Separa preámbulo y cuerpo del documento """

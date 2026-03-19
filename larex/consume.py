@@ -10,7 +10,7 @@ import re
 import sys
 
 
-def consume_brace_block(p, node: dict, context: str, inline_only: bool = False):
+def consume_brace_block(p, node: dict | list, context: str, inline_only: bool = False):
     """Consume un bloque {...} y parsea su contenido recursivamente."""
     p.expect('OPEN_BRACE')
     frame = {
@@ -115,7 +115,8 @@ def consume_raw_until_end(p, name: str) -> str:
                 end_name = p.expect('TEXT')
                 p.expect('CLOSE_BRACE')
                 if end_name == name:
-                    return ''.join(parts).strip()
+                    raw = ''.join(parts).strip()
+                    return ' '.join(raw.split())
             except SyntaxError:
                 pass
             parts.append(tok.value)
