@@ -6,38 +6,144 @@ larex parses a subset of LaTeX into a structured AST (Abstract Syntax Tree) repr
 
 This is a personal project born out of curiosity and challenge. It is not a full LaTeX compiler and does not aim to be one. Instead, it defines a clear, supported subset of LaTeX that is sufficient for writing math-heavy interactive content, while keeping the codebase small and readable enough that others can study it and learn from it.
 
+---
+
 ## Current Support
 
-**Text formatting**
-- `\textbf{...}` — bold text
-- `\textit{...}` — italic text
-- `\newline` — line break
+### Text Formatting
+| Command | Output |
+|---------|--------|
+| `\textbf{...}` | **Bold** |
+| `\textit{...}` | *Italic* |
+| `\emph{...}` | *Emphasized* |
+| `\underline{...}` | Underlined |
+| `\texttt{...}` | `Monospace` |
+| `\textsf{...}` | Sans-serif |
+| `\psc{...}` | Small caps |
 
-**Math**
-- `$...$` — inline math (rendered by KaTeX)
-- `$$...$$` — display math (rendered by KaTeX)
-- `\begin{equation}...\end{equation}` — display math environment
+### Headings
+| Command | Level |
+|---------|-------|
+| `\chapter{...}` | 0 (chapter) |
+| `\section{...}` | 1 (section) |
+| `\subsection{...}` | 2 (subsection) |
 
-**Structure**
-- `\section{...}` — heading level 1
-- `\subsection{...}` — heading level 2
+### Math
+| Syntax | Type |
+|--------|------|
+| `$...$` | Inline math |
+| `$$...$$` | Display math |
+| `\[...\]` | Display math |
+| `\begin{equation}...\end{equation}` | Display math |
+| `\begin{align}...\end{align}` | Display math |
+| `\begin{cases}...\end{cases}` | Display math |
+| `\begin{pmatrix}...\end{pmatrix}` | Display math |
 
-**Environments**
+### Lists
 - `\begin{enumerate}...\end{enumerate}` — ordered lists
 - `\begin{itemize}...\end{itemize}` — unordered lists
-- `\item` — list items with implicit closing (a new `\item` automatically closes the previous one)
+- `\item` — list items (implicit closing)
 
-**Interactive elements**
-- `\note{label}{content}` — clickable inline note that shows a floating popup with the content. Restricted to text and inline math only.
-- `\def{title}{content}` — definition block
+### Custom Environments (Key-Value)
+All accept `[label=x, title=y]` syntax:
 
-**Other**
-- `% comments` — LaTeX-style line comments, stripped before tokenization
-- Unknown commands are skipped with a warning, so the parser doesn't crash on unsupported input
+| Environment | Purpose |
+|-------------|---------|
+| `theorem` | Formal theorem |
+| `definition` | Formal definition |
+| `axiom` | Axiom or postulate |
+| `lemma` | Auxiliary lemma |
+| `proposition` | Proposition |
+| `corollary` | Corollary |
+| `proof` | Proof block |
+| `exercise` | Practice problem |
+| `convention` | Notation convention |
+| `block` | Tab-based content |
+
+### Other Elements
+- `\note[key=val]{content}` — inline tooltip note
+- `\alert{content}` — highlighted alert
+- `\label{id}` — label for cross-references
+- `\ref{id}` — cross-reference
+- `\includegraphics[options]{path}` — image
+- `\caption{text}` — figure caption
+- `\begin{figure}...\end{figure}` — figure container
+- `\begin{verbatim}...\end{verbatim}` — preformatted text
+- `\begin{tabular}{|l|c|r|}...\end{tabular}` — table
+- `\url{path}` — hyperlink URL
+- `% comments` — stripped before tokenization
+- `\qed`, `\obs`, `\dem` — markers
+- `\newline`, `\n`, `\\` — line breaks
+- `\newpage` — page break
+- `\noindent` — suppress indentation
+- `\backslash` — literal backslash
+
+---
+
+## CLI Usage
+
+```bash
+# Parse a .tex file and print the JSON AST to stdout
+python -m larex input.tex
+
+# Parse and save to a file
+python -m larex input.tex -o output.json
+
+# Parse with file output to examples/dist/
+python -m larex input.tex -f
+```
+
+The output JSON can be placed in your Vue project's public directory and fetched at runtime.
+
+---
+
+## JSON Schema
+
+The AST uses a `kind` field to identify each node type. Text is represented as plain strings directly inside `content` arrays.
+
+```python
+# Output structure
+{
+  "content": [...],   # Array of AST nodes
+  "refs": {...},      # Label → {index} mappings
+  "chapters": {...}, # Chapter metadata
+  "meta": {...}       # Document metadata (documentclass, packages)
+}
+```
+
+### Node Types
+
+| Kind | Fields | Description |
+|------|--------|-------------|
+| `heading` | `level`, `content` | Chapter/section (level: 0, 1, 2) |
+| `bold`, `italic`, `underline`, `monospace`, `smallcaps`, `sansserif` | `content` | Text formatting |
+| `math` | `mode` ("inline"/"display"), `raw` | Math expression (raw LaTeX) |
+| `list` | `ordered`, `content` | Ordered/unordered list |
+| `item` | `content` | List item |
+| `theorem`, `definition`, `axiom`, `lemma`, `proposition`, `corollary`, `proof`, `exercise`, `convention`, `block` | `content`, `params` | Mathematical environments |
+| `note` | `params`, `content` | Tooltip note (inline-only) |
+| `alert` | `content` | Alert box |
+| `figure` | `content` | Image container |
+| `image` | `params` | Image node |
+| `caption` | `content` | Figure caption |
+| `table` | `columns`, `rows` | Table with parsed structure |
+| `verbatim` | `content` | Preformatted text (string) |
+| `label` | `id`, `index` | Label definition |
+| `ref` | `target`, `index` | Cross-reference |
+| `url` | `content` | Raw URL string |
+| `newline` | — | Line break |
+| `pagebreak` | — | Page break |
+| `observation` | — | Observation marker |
+| `proof-mark` | — | Proof marker |
+| `qed` | — | End-of-proof symbol |
+| `group` | `content` | Grouped content |
+| `paragraph` | — | Paragraph marker |
+
+---
 
 ## Architecture
 
-The project is structured to mirror the phases of a classical compiler, making each file a self-contained lesson in how parsers work:
+The project is structured to mirror the phases of a classical compiler:
 
 ```
 source.tex
@@ -61,48 +167,112 @@ ast.json        The output
                  Consumed directly by Vue components
 ```
 
+### File Structure
+
+```
+larex/
+├── tokens.py          # Tokenizer: raw text → tokens
+├── registry.py        # Grammar: command/environment definitions
+├── parser.py          # Parser: tokens → AST
+├── consume.py         # Token consumption helpers
+├── cli.py             # Command-line interface
+└── handlers/
+    ├── commands.py    # Command handlers
+    ├── environments.py # Environment handlers
+    ├── math.py        # Math block handlers
+    ├── structure.py   # \item, \label, \ref handlers
+    └── table.py       # Tabular parser
+```
+
+### Key Concepts
+
 **tokens.py** — The tokenizer splits LaTeX source into tokens like `('COMMAND', '\\section')`, `('TEXT', 'hello')`, `('MATH_INLINE', '$')`. It does not know or care whether a command exists. Its only job is to classify characters into types.
 
 **registry.py** — A declarative dictionary that tells the parser how to handle each command. Adding a new command means adding one line here. The parser itself does not change.
 
 **parser.py** — A stack-based parser. The stack holds references to parent nodes, so each token knows where it belongs without needing to track siblings. The parent determines what its children can contain — for example, a note restricted to `inline_only` will reject display math or environments inside it.
 
-**cli.py** — Entry point for command-line usage.
+---
 
-## How to Use
+## Extending the Parser
 
-```bash
-# Parse a .tex file and print the JSON AST to stdout
-python -m larex input.tex
+### Adding a New Command
 
-# Parse and save to a file
-python -m larex input.tex -o output.json
+To add a new command, edit `registry.py`:
+
+```python
+COMMANDS: dict[str, dict] = {
+    # Example: a new self-closing command
+    '\\mycommand': {'produces': 'mykind', 'self_closing': True},
+    
+    # Example: a command with one argument (parsed)
+    '\\other': {'produces': 'otherkind', 'args': 1},
+    
+    # Example: a command with raw arguments
+    '\\rawcmd': {'produces': 'rawkind', 'args': 1, 'raw_args': True},
+    
+    # Example: command with key-value parameters
+    '\\special': {'produces': 'specialkind', 'args': 1, 'kv': True},
+}
 ```
 
-The output JSON can be placed in your Vue project's public directory and fetched at runtime.
+**Registry Options:**
 
-## JSON Schema
+| Option | Description |
+|--------|-------------|
+| `produces` | (required) The `kind` value in the AST node |
+| `args` | Number of brace blocks to consume as content |
+| `opt_args` | Max positional bracket args (standard LaTeX) |
+| `kv` | Parse brackets as key=value pairs |
+| `raw_args` | Consume braces as raw text (not parsed) |
+| `self_closing` | No arguments consumed |
+| `inline_only` | Reject display math and environments inside |
+| `extra` | Fixed fields copied to the node |
+| `modifier` | Convert parent group node to this kind |
 
-The AST uses a `kind` field to identify each node type. Text is represented as plain strings directly inside `content` arrays.
+### Adding a New Environment
 
+```python
+ENVIRONMENTS: dict[str, dict] = {
+    # Example: parsed environment
+    'myenv': {'produces': 'myenvkind', 'kv': True},
+    
+    # Example: raw environment (content passed to KaTeX)
+    'equation': {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},
+    
+    # Example: table environment
+    'tabular': {'produces': 'table', 'table': True},
+}
 ```
-Plain text:     "this is a string"
 
-Heading:        { kind: "heading",  level: 1,           content: [...] }
-Bold:           { kind: "bold",                          content: [...] }
-Italic:         { kind: "italic",                        content: [...] }
-Newline:        { kind: "newline" }
+**Environment Options:**
 
-Math:           { kind: "math",  mode: "inline"|"display",  raw: "x^2" }
+| Option | Description |
+|--------|-------------|
+| `produces` | (required) The `kind` value in the AST node |
+| `kv` | Parse brackets as key=value pairs |
+| `opt_args` | Positional bracket args (standard LaTeX) |
+| `raw` | Collect entire body as raw text |
+| `table` | Use tabular parser |
+| `extra` | Fixed fields copied to the node |
 
-List:           { kind: "list",  ordered: true|false,    content: [...items] }
-Item:           { kind: "item",                          content: [...] }
+### Key-Value Parameter System
 
-Note:           { kind: "note",  params: ["label"],      content: [...] }
-Definition:     { kind: "definition",  params: ["title"], content: [...] }
+Custom environments use key-value syntax instead of positional arguments:
+
+```latex
+\begin{environment}[key1=value1, key2=value2]
+  Content
+\end{environment}
 ```
 
-`content` is always an array of child nodes. `raw` is always a string that goes directly to KaTeX without further parsing.
+The parser handles this via `consume_env_params()` in `consume.py`. The common keys are:
+
+- `label` — identifier for `\ref`
+- `title` — display name
+- `aside` — lateral annotation
+
+---
 
 ## The Road Here: From Regex to Tokenizer
 
@@ -175,18 +345,37 @@ The stack-based approach also naturally solves the problems from previous stages
 
 **What was learned:** the fundamental lesson of compiler design is separation of phases. Each phase has one job, does it well, and passes its output to the next phase. The tokenizer turns characters into tokens. The parser turns tokens into a tree. The registry holds the language rules. No phase needs to know the internals of the others.
 
+---
+
 ## Project Goals
 
 - **Personal challenge**: build something non-trivial that requires real understanding of how compilers and parsers work. Not as an academic exercise, but as a tool that solves a real problem.
 - **Learn compiler fundamentals by building one**: understand tokenization, parsing, ASTs, context management, and multi-pass analysis — not from a textbook, but by hitting the walls that motivate each concept.
 - **Create interactive math books**: provide a way to write mathematical content in LaTeX (a format mathematicians already know) and render it as an interactive web experience with clickable notes, cross-references, and embedded explanations.
-- **Contribute to the university community**: leave this project open and documented enough that other students can read the code, understand how a parser works, and use it for their own study. The architecture mirrors classical compiler phases intentionally, so reading the codebase teaches the theory. 
+- **Contribute to the university community**: leave this project open and documented enough that other students can read the code, understand how a parser works, and use it for their own study. The architecture mirrors classical compiler phases intentionally, so reading the codebase teaches the theory.
 
-## Short-Term Roadmap
+---
 
-- Adapt the Vue frontend to consume the new `kind`-based JSON schema
-- Add `\label` and `\ref` for cross-references within documents (single-pass, forward declarations only)
-- Add `\image{url}{style}{caption}` for embedded images
-- Add YouTube video embedding
-- Add compatibility with existing custom LaTeX libraries (`\theorem`, `\axiom`, `\proof`, and related commands) once they are cleaned up and published
-- Add additional standard LaTeX commands as needed
+## Roadmap
+
+### Completed
+- [x] Basic text formatting commands
+- [x] Inline and display math via KaTeX
+- [x] Headings (chapter, section, subsection)
+- [x] Ordered and unordered lists
+- [x] Theorem environments (theorem, definition, axiom, lemma, proposition, corollary, proof)
+- [x] Cross-references with `\label` and `\ref`
+- [x] Images with `\includegraphics` and `figure` environment
+- [x] Tables with `tabular` environment
+- [x] Key-value parameter system
+- [x] File inclusion with `\include`
+
+### In Progress
+- [ ] Better error messages with line/column info
+- [ ] Footnotes
+- [ ] Additional standard LaTeX commands
+
+### Planned
+- [ ] `\href` for clickable links
+- [ ] YouTube video embedding
+- [ ] TikZ support (via pre-rendering)
