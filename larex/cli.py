@@ -40,7 +40,11 @@ def main():
         print(f"-> examples/dist/{name}.tex", file=sys.stderr)
 
     with open(path) as f:
-        ast = compile_tex(f.read(), base_path=os.path.dirname(os.path.abspath(path)))
+        try:
+            ast = compile_tex(f.read(), base_path=os.path.dirname(os.path.abspath(path)))
+        except SyntaxError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
     result = json.dumps(ast, indent=2, ensure_ascii=False)
 
@@ -54,5 +58,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 

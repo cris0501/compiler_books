@@ -6,8 +6,10 @@ from ..registry import ENVIRONMENTS
 from ..consume import (
       consume_env_params,
       consume_opt_arg,
-      consume_raw_until_end
+      consume_raw_until_end,
+      consume_raw_brace
   )
+from .table import parse_col_spec, parse_table_rows
 
 
 def handle_begin(p):
@@ -22,6 +24,18 @@ def handle_begin(p):
     props = ENVIRONMENTS.get(name)
     if props is None:
         print(f"Warning: environment desconocido '{name}'", file=sys.stderr)
+        return
+  
+    if props.get('table'):
+        col_spec = consume_raw_brace(p) # Leemos sin parsear
+        columns = parse_col_spec(col_spec)
+        rows = parse_table_rows(p, name)
+
+        node = {'kind': props['produces']}
+        node.update(props.get('extra', {}))
+        node['columns'] = columns
+        node['rows'] = rows
+        p.add_node(node)
         return
 
     # -- Params: kv o posicional según registry --
@@ -131,5 +145,6 @@ def _register_label(p, node: dict, kv: dict):
     p.refs[label_id] = {'index': p.label_counter}
     node['id'] = label_id
     node['index'] = p.label_counter
+
 
 

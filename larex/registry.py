@@ -74,6 +74,7 @@ ENVIRONMENTS: dict[str, dict] = {
     'itemize':      {'produces': 'list',   'extra': {'ordered': False}},
     'figure':       {'produces': 'figure', 'opt_args': 1},
     'verbatim':     {'produces': 'verbatim', 'raw': True},
+    'tabular':      {'produces': 'table', 'table': True},
 
     # -- Raw: el cuerpo se recolecta como texto plano --
     'equation':     {'produces': 'math', 'extra': {'mode': 'display'}, 'raw': True},

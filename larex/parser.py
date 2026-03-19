@@ -91,15 +91,16 @@ class Parser:
     def step(self):
         tok = self.consume()
         match tok.kind:
-            case 'COMMAND':                          self._dispatch_command(tok.value)
-            case 'MATH_BLOCK':                       handle_math(self, '$$')
-            case 'MATH_INLINE':                      handle_math(self, '$')
-            case 'DISPLAY_MATH_OPEN':                handle_math(self, '\\[')
-            case 'DISPLAY_MATH_CLOSE':               pass
-            case 'PARAGRAPH':                        self.add_node({'kind': 'paragraph'})
-            case 'DOUBLE_BACKSLASH':                 self.add_node({'kind': 'newline'})
-            case 'ESCAPED_CHAR':                     self.add_node(tok.value[1])
-            case 'OPEN_BRACKET' | 'CLOSE_BRACKET':   self.add_node(tok.value)
+            case 'COMMAND':                           self._dispatch_command(tok.value)
+            case 'MATH_BLOCK':                        handle_math(self, '$$')
+            case 'MATH_INLINE':                       handle_math(self, '$')
+            case 'DISPLAY_MATH_OPEN':                 handle_math(self, '\\[')
+            case 'DISPLAY_MATH_CLOSE':                pass
+            case 'PARAGRAPH':                         self.add_node({'kind': 'paragraph'})
+            case 'DOUBLE_BACKSLASH':                  self.add_node({'kind': 'newline'})
+            case 'ESCAPED_CHAR':                      self.add_node(tok.value[1])
+            case 'OPEN_BRACKET' | 'CLOSE_BRACKET':    self.add_node(tok.value)
+            case 'AMPERSAND':                         self.add_node('&')
             case 'WHITESPACE':
                 target = self.target()
                 if target:
@@ -198,3 +199,4 @@ def _parse_preamble(preamble: str) -> dict:
             meta['dependencies'].append(dep)
 
     return meta
+

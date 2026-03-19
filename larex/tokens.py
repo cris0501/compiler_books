@@ -33,6 +33,7 @@ TOKEN_SPECS = [
     ('CLOSE_BRACKET', r'\]'),
     ('PARAGRAPH',     r'\n[ \t]*\n'),
     ('WHITESPACE',    r'[ \t\n]+'),
+    ('AMPERSAND',     r'&'),              # Necesario para table
     ('TEXT',          r'[^\\$\{\}\[\]\s]+'),
 ]
 
