@@ -277,5 +277,34 @@ book
   La {\bfseries metadata} se refiere a la informacion relacionada con el mismo fichero,
   es decir, las dependencias que tiene, el tipo de documento, configuraciones, etc. Es
   importante para crear un catalogo que pueda leer esa informacion de forma automatica.
+  Esto nos brinda informacion rapida, por ejemplo, si importa Tikz, aun no hay soporte.
+  
+  \alert{ Dar soporte a Tikz es el mayor problema que veo ahorita. }
+  
+  \chapter{ Primeros documentos }
+  
+  Decidí empezar a trabajar en algunas notas. La idea es poner a prueba el proyecto para
+  que la comunidad pueda ver un ejemplo claro. Es por ello que trataré de pasar parte de
+  mis notas de lógica ya que mi acesor me recomendo revisar unos temas y entonces logré
+  entender algunos temas que considero utiles para los primeros semestres. ¿Y eso que
+  tiene que ver?
+  
+  Uso un par de tablas, asi que hasta hoy las integre. Ya tenía una parte construida pero
+  la otra parte la separé ya que requieren un proceso de parser muy diferente.
+  
+  \begin{tabular}{ c|rr }
+    Conector & Simbolo & Alternativo \\
+    \hline
+    Conjunción    & $ \land $ & \\
+    Disjuncion    & $ \lor $ & \\
+    Negación      & $ \neg $ & ~ \\
+    Implicación   & $ \rightarrow $ & \\
+    Bicondicional & $ \leftrightarrow $ & \\
+    \hline
+  \end{tabular}
+  
+  No tenía otro ejemplo claro pero demuestra que se pueden insertar matematicas simples
+  en una celda, es decir, tenemos nodos ricos.
 
 \end{document}
+

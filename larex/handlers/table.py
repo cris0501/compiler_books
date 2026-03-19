@@ -40,7 +40,10 @@ def parse_table_rows(p, name: str) -> list:
     def flush_row():
         close_cell()
         if current_row:
-            rows.append({'cells': [c['content'] for c in current_row]})
+            cells = [c['content'] for c in current_row]
+            # Solo agregar si hay celda con contenido
+            if any(cell for cell in cells):
+                rows.append({'cells': cells})
             current_row.clear()
     
     # -- Init parser --

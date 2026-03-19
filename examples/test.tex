@@ -12,37 +12,7 @@
 
   \include{chapters/intro}
 
-  \chapter{ Tokens }
-
-  Experimentando con algunos modelos de lenguaje, se me ocurrio replicar el uso
-  de tokens: usar regex pero para crear una \textbf{tabla de tokens}. No importa
-  el contenido, solo el tipo, si es un comando, texto, entorno, etc. Ademas note
-  que el arbol resultante no necesita pensar en como renderizar sino en como
-  organizar la salida, el navegador se encarga del resto.
-
-  Los primeros comandos integrados fueron una prueba: \backslash section,
-  \backslash\backslash y estilos de texto, para verificar que la tokenizacion
-  funcionaba.
-
-  \section{ Estructura de archivos }
-
-  Cuando el tokenizador crecio, separar en archivos de una sola responsabilidad
-  fue necesario. Seguir el flujo en un unico archivo se habia vuelto dificil,
-  y el parseo asincrono tenia dos puntos de ejecucion por step. Se elimino.
-
-  \section{ Entornos }
-
-  Con esa base mas limpia, los primeros entornos fueron \texttt{enumerate}
-  e \texttt{itemize}. En retrospectiva no fue la mejor eleccion porque estos
-  entornos usan \backslash item como separador, un \textit{cierre implicito}
-  sin marca final. Eso complica la deteccion, pero si funciona bien la
-  misma logica sirve para otros elementos similares.
-
-  \begin{itemize}
-      \item Test de lista
-      \item Prueba con inline math $\int 2x^{3y}$
-      \item Cierre implicito del anterior
-  \end{itemize}
+  \include{chapters/tokens}
 
   \chapter{ Contextos }
 
@@ -145,37 +115,7 @@ book
 
   Se citan con \backslash ref\{id\}, ej, \ref{eq:einstein}.
 
-  \section{ Componentes de la libreria }
-
-  Los custom components de la libreria existian antes del parser. Integrarlos
-  requirio retrocompatibilidad: se convirtieron de comandos inline a entornos
-  con key-value props. Asi siguen la misma sintaxis que el parser ya conoce y
-  el escritor no necesita aprender nada nuevo.
-
-  \begin{axiom}
-    Los custom components dejaron de ser commands inline para ser environments con key-value props.
-  \end{axiom}
-
-  \begin{axiom}[title=Arquimedes, label=ax-arq]
-    Para todo $x \in \N$ existe $y \in \N$ tal que $y > x$.
-  \end{axiom}
-
-  \begin{theorem}[Bolzano-Weierstrass]
-    Toda sucesion acotada en $\R^n$ tiene una subsucesion convergente.
-  \end{theorem}
-
-  \begin{definition}[title=Espacio metrico, label=def-met]
-    Un espacio metrico es un par $(X, d)$ donde ...
-  \end{definition}
-
-  \begin{proof}
-    Sea $\epsilon > 0$ ...
-    \qed
-  \end{proof}
-
-  \begin{exercise}[label=ej-1]
-    Demuestre que ...
-  \end{exercise}
+  \include{chapters/library}
 
   \chapter{ Capitulos y estilos }
 
@@ -254,13 +194,19 @@ book
     \hline
     Conjunción    & $ \land $ & \\
     Disjuncion    & $ \lor $ & \\
-    Negación      & $ \not $ & ~ \\ % ¬ \\
-    Implicación   & $ \then $ & \\
-    Bicondicional & ↔ & \\
+    Negación      & $ \neg $ & ~ \\
+    Implicación   & $ \rightarrow $ & \\
+    Bicondicional & $ \leftrightarrow $ & \\
+    \hline
   \end{tabular}
   
-  No tenía otro ejemplo claro pero demuestra que se puede insertar matematicas simples
+  No tenía otro ejemplo claro pero demuestra que se pueden insertar matematicas simples
   en una celda, es decir, tenemos nodos ricos.
+  
+  Ademas, es justo en este momento donde separé este documento en capitulos. Realmente no
+  llevan continuidad pero sirve que se prueba esta función. Lo malo es que, por la forma
+  en que lo integré, no indica correctamente el punto de error. Se me ocurre crear un
+  nuevo stack para cada include y así poder indicar el punto exacto. De momento, no es urgente.
 
 \end{document}
 
