@@ -11,7 +11,7 @@ from .handlers import (
     handle_command, handle_begin, handle_end,
     handle_math, handle_item, handle_label, handle_ref,
 )
-from .consume import _resolve_includes
+from .consume import resolve_includes
 
 
 class Parser:
@@ -142,9 +142,6 @@ class Parser:
 
 def compile_tex(src: str, base_path: str = '.') -> dict:
     """ Funcion inicial """
-    src = _resolve_includes(src, base_path)
-    src = re.sub(r'(?<!\\)%.*', '', src)
-
     preamble, body = _split_document(src)
     meta = _parse_preamble(preamble)
 
@@ -199,4 +196,5 @@ def _parse_preamble(preamble: str) -> dict:
             meta['dependencies'].append(dep)
 
     return meta
+
 

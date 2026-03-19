@@ -145,7 +145,7 @@ def skip_brace_args(p):
             p.pos += 1
 
 
-def _resolve_includes(src: str, base_path: str) -> str:
+def resolve_includes(src: str, base_path: str) -> str:
     """Reemplaza \\include{archivo} con el contenido del archivo."""
     pattern = re.compile(r'\\include\{([^}]+)\}')
 
@@ -158,9 +158,10 @@ def _resolve_includes(src: str, base_path: str) -> str:
             with open(filepath) as f:
                 child = f.read()
             # Recursivo: el archivo incluido puede tener sus propios \include
-            return _resolve_includes(child, os.path.dirname(filepath))
+            return resolve_includes(child, os.path.dirname(filepath))
         except FileNotFoundError:
             print(f"Warning: archivo no encontrado '{filepath}'", file=sys.stderr)
             return ''
 
     return pattern.sub(replacer, src)
+

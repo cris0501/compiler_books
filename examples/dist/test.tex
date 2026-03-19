@@ -87,6 +87,7 @@ proyecto, previamente abandonado.
       \item Cierre implicito del anterior
   \end{itemize}
 
+
   \chapter{ Contextos }
 
   \section{ Ecuaciones }
@@ -195,30 +196,15 @@ book
   con key-value props. Asi siguen la misma sintaxis que el parser ya conoce y
   el escritor no necesita aprender nada nuevo.
 
-  \begin{axiom}
-    Los custom components dejaron de ser commands inline para ser environments con key-value props.
-  \end{axiom}
-
   \begin{axiom}[title=Arquimedes, label=ax-arq]
     Para todo $x \in \N$ existe $y \in \N$ tal que $y > x$.
   \end{axiom}
 
-  \begin{theorem}[Bolzano-Weierstrass]
+  \begin{theorem}[title=Bolzano-Weierstrass, label=th-bw]
     Toda sucesion acotada en $\R^n$ tiene una subsucesion convergente.
   \end{theorem}
 
-  \begin{definition}[title=Espacio metrico, label=def-met]
-    Un espacio metrico es un par $(X, d)$ donde ...
-  \end{definition}
 
-  \begin{proof}
-    Sea $\epsilon > 0$ ...
-    \qed
-  \end{proof}
-
-  \begin{exercise}[label=ej-1]
-    Demuestre que ...
-  \end{exercise}
 
   \chapter{ Capitulos y estilos }
 
@@ -305,6 +291,12 @@ book
   
   No tenía otro ejemplo claro pero demuestra que se pueden insertar matematicas simples
   en una celda, es decir, tenemos nodos ricos.
+  
+  Ademas, es justo en este momento donde separé este documento en ficheros. Realmente no
+  llevan continuidad pero sirve que se prueba esta función. Lo malo es que, por la forma
+  en que lo integré, no indica correctamente el punto de error. Se me ocurre crear un
+  nuevo stack para cada include y así poder indicar el punto exacto. De momento, no es urgente.
 
 \end{document}
+
 
