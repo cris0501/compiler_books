@@ -46,7 +46,10 @@ def main():
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
 
-    result = json.dumps(ast, indent=2, ensure_ascii=False)
+    if '--pretty' in sys.argv:
+        result = json.dumps(ast, indent=2, ensure_ascii=False)
+    else:
+        result = json.dumps(ast, ensure_ascii=False, separators=(',', ':'))
 
     if out_path:
         with open(out_path, 'w') as f:
