@@ -1,127 +1,121 @@
 \documentclass{book}
 
 \begin{document}
+
   \section{Lógica Proposicional}
-
-  \subsection{Proposiciones}
-
-  Existen 2 tipos de proposiciones, atómicas y moleculares. Estas deben ser
-  fórmulas bien formadas, es decir, solo pueden tener un valor de verdad
-  asociado, y su enunciado no puede contener valores de verdad.
-
+  
+  En lógica proposicional existen 2 tipos de proposiciones, las \textbf{atómicas} y las
+  \textbf{moleculares}, y decimos que una proposición es verdadera $V$ bajo una
+  \note[title=valuación]{La valuación $V$ es determinada por las reglas del modelo al que se aplica.} $v$
+  si al aplicar las reglas semánticas de los conectores, el resultado es $V$.
+  
+  Para el caso de una proposición atómica $p$ tenemos únicamente 2 posibles valores $V$ y $F$.
+  Para el caso de las moleculares cambia para cada conector que indica cómo interactúan.
+  El valor de verdad está definido en la semántica que propaga. Los casos en que una valuación
+  es $F$ se conocen como \textbf{caso de exclusión}.
+  
   \subsection{Conectores}
-
-  En lógica, se definen conectores; estos representan un par ordenado de
-  valores asociados a la relación entre 2 proposiciones atómicas. Estas
-  definiciones indican qué casos deben cumplirse del enunciado, y estos
-  pares ordenados se pueden representar por valores en una tabla de verdad.
-
-  Estas definiciones nos permiten identificar algunas estrategias para
-  demostrar proposiciones matemáticas. Para ello, basta probar, ya fuese
-  un \textit{contraejemplo} o una construcción directa.
-
-  \begin{definition}[title={Contraejemplo}]
-  Un contraejemplo es probar que alguna de las exclusiones puede ocurrir.
-  \end{definition}
-
-  \subsection{Conjunción}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{definition}[title={Conjunción}]
-  El conector $p \land q$ solo permite el par ordenado $(V, V)$ y excluye
-  al resto.
-  \end{definition}
+  
+  \begin{minipage}{0.55\textwidth}
+    \begin{definition}[title=Negación]
+      La molécula más simple, puesto que niega el valor de valuación de $p$.
+    \end{definition}
   \end{minipage}
 
-  \begin{minipage}[t]{0.48\textwidth}
+  \begin{minipage}{0.35\textwidth}
+    \begin{tabular}{c|c}
+      $p$ & $\sim p$ \\
+      \hline
+      V & F \\
+      F & V \\
+    \end{tabular}
+  \end{minipage}
+  
+  \begin{minipage}{0.55\textwidth}
+    \begin{definition}[title=Conjunción]
+      Este conector solo permite el par ordenado $(V, V)$ y excluye al resto.
+      Decimos entonces que $p \land q$ se puede representar por pares ordenados
+      en un conjunto sin las exclusiones, ie:
+      \begin{equation}
+        p \land q = \{(V, V)\}
+      \end{equation}
+    \end{definition}
+  \end{minipage}
+
+  \begin{minipage}{0.35\textwidth}
+    \begin{tabular}{c|c|c}
+      $p$ & $q$ & $p \land q$ \\
+      \hline
+      V & V & V \\
+      V & F & F \\
+      F & V & F \\
+      F & F & F \\
+    \end{tabular}
+  \end{minipage}
+  
+  \begin{minipage}{0.55\textwidth}
+    \begin{definition}[title=Disyunción]
+      Para este conector únicamente se excluye $(F, F)$. Por lo tanto se puede representar que:
+      \begin{equation}
+        p \lor q = \{(V,V),\ (V,F),\ (F,V)\}
+      \end{equation}
+    \end{definition}
+  \end{minipage}
+
+  \begin{minipage}{0.35\textwidth}
+    \begin{tabular}{c|c|c}
+      $p$ & $q$ & $p \lor q$ \\
+      \hline
+      V & V & V \\
+      V & F & V \\
+      F & V & V \\
+      F & F & F \\
+    \end{tabular}
+  \end{minipage}
+  
+  En lógica proposicional no se busca describir el mundo físico, ie, la lógica no entiende
+  causalidad ni temporalidad, sino que son un conjunto de reglas.
+  
+  \begin{definition}[title=Implicación]
+    Este conector no justifica que si ocurre $p$ causa $q$, ni que para que ocurra $q$ deba
+    ocurrir $p$. No se evalúa de forma secuencial, sino que cada uno tiene su valor.
+    La única exclusión que tiene es el caso $(V, F)$.
+  \end{definition}
+
   \begin{tabular}{c|c|c}
-  $p$ & $q$ & $p \land q$ \\
-  \hline
-  V & V & V \\
-  V & F & F \\
-  F & V & F \\
-  F & F & F \\
+    $p$ & $q$ & $p \to q$ \\
+    \hline
+    V & V & V \\
+    V & F & F \\
+    F & V & V \\
+    F & F & V \\
   \end{tabular}
-  \end{minipage}
 
-  De este modo, podemos probar la conjunción como verdad por una prueba
-  directa. Para probar que es falsa, basta probar un contraejemplo:
-
-  \begin{align}
-  \sim p &\to \sim(p \land q) \\
-  \sim q &\to \sim(p \land q)
-  \end{align}
-
-  \subsection{Disyunción}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{definition}[title={Disyunción}]
-  Para el conector $p \lor q$ únicamente se excluye $(F, F)$.
-  \end{definition}
-  \end{minipage}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{tabular}{c|c|c}
-  $p$ & $q$ & $p \lor q$ \\
-  \hline
-  V & V & V \\
-  V & F & V \\
-  F & V & V \\
-  F & F & F \\
-  \end{tabular}
-  \end{minipage}
-
-  Dado que la lógica no funciona por enumeración, la forma correcta es
-  por exclusión del contraejemplo, así basta probar que ocurre:
-
-  \begin{equation}
-  \sim p \land \sim q \equiv (F, F)
-  \end{equation}
-
-  \subsection{Implicación}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{definition}[title={Implicación}]
-  En lógica proposicional no se busca describir el mundo físico, es decir,
-  la lógica no entiende causalidad ni temporalidad, sino que son un
-  conjunto de reglas. Este conector no explica que si ocurre $p$ causa $q$,
-  no es que para que ocurra $q$ deba ocurrir $p$. No se evalúa de forma
-  secuencial, sino que cada uno tiene su valor. La única exclusión que
-  tiene es el caso $(V, F)$.
-  \end{definition}
-  \end{minipage}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{tabular}{c|c|c}
-  $p$ & $q$ & $p \to q$ \\
-  \hline
-  V & V & V \\
-  V & F & F \\
-  F & V & V \\
-  F & F & V \\
-  \end{tabular}
-  \end{minipage}
-
-  Dicho de otra forma, si $p$ es falso, significa que la hipótesis no se
-  cumple, por tanto no hace falta evaluar el valor de $q$. La regla de
-  exclusión dice:
-
+  Dicho de otra forma, si $p$ es falso, significa que la hipótesis no se cumple,
+  por tanto no se considera el valor de $q$. La regla de exclusión dice:
+  
   \alert{No existe un caso en que $p$ sea $V$ y $q$ sea $F$}
-
+  
   \alert{Si no hay promesa, no hay incumplimiento}
-
-  El caso $(F, F)$ puede parecer contraintuitivo; ambas falsas debería ser
-  falsa la proposición en general, pero esto no es así porque no se busca
-  reflejar o explicar una situación del mundo físico. Esta proposición
-  también se puede abordar como:
-
-  \begin{equation}
-  \sim(p \land \sim q) \equiv p \to q
-  \end{equation}
-
-  Para demostrar la identidad de dos proposiciones basta con ver sus
-  valores de verdad.
-
+  
+  El caso $(F, F)$ puede parecer contraintuitivo; ambas falsas debería ser falsa la proposición
+  en general, pero esto no es así porque no se busca reflejar o explicar una situación del mundo físico.
+  
+  \subsection{Equivalencia lógica}
+  
+  Antes de continuar con otros elementos, debemos aclarar la idea de la \textbf{equivalencia
+  lógica}, ya que en ocasiones resulta más sencillo abordar una equivalencia a toda la
+  proposición original.
+  
+  \begin{definition}[title=Equivalencia]
+  Decimos que dos proposiciones son equivalentes si tienen los mismos casos de exclusión.
+  \end{definition}
+  
+  De acuerdo con esto podemos hallar una equivalencia para $p \to q$. Un caso de exclusión
+  es $(V, F)$, ie, $p = V$ y $q = F$, lo cual se expresa como $p \land \sim q$. Sin embargo,
+  esto es el caso que \textbf{no} está permitido, por lo tanto negamos esa expresión y
+  hallamos la expresión adecuada:
+  
   \begin{tabular}{c|c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $\sim q$ & $p \land \sim q$ & $\sim(p \land \sim q)$ \\
   \hline
@@ -130,20 +124,22 @@
   F & V & V & F & F & V \\
   F & F & V & V & F & V \\
   \end{tabular}
-
-  \subsection{Bicondicional}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{definition}[title={Bicondicional}]
-  $p \leftrightarrow q$ es verdad cuando $p$ y $q$ tienen el mismo valor
-  de verdad en todas las interpretaciones, es decir:
+  
+  \alert{De modo que los valores de exclusión son aquellos en los que el conector es falso
+  por definición semántica.}
+  
+  \begin{definition}[title=Bicondicional]
+  Es verdad cuando $p$ y $q$ tienen el mismo valor de verdad en todas las interpretaciones.
+  Este conector es una síntesis útil para una composición de implicaciones:
   \begin{equation}
   p \leftrightarrow q \equiv (p \to q) \land (q \to p)
   \end{equation}
+  De forma que es verdadera cuando coinciden $p$ y $q$:
+  \begin{equation}
+  p \leftrightarrow q \equiv (p \land q) \lor (\sim p \land \sim q)
+  \end{equation}
   \end{definition}
-  \end{minipage}
-
-  \begin{minipage}[t]{0.48\textwidth}
+  
   \begin{tabular}{c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $q \to p$ & $(p \to q) \land (q \to p)$ \\
   \hline
@@ -152,76 +148,85 @@
   V & F & F & V & F \\
   F & F & V & V & V \\
   \end{tabular}
-  \end{minipage}
+  
+  \subsection{Demostración}
+  
+  Las equivalencias las escribimos por análisis, es decir, sabemos cómo se comportan los
+  conectores. Recordemos que la lógica proposicional no busca explicar el mundo físico;
+  para probar que una proposición es válida, las dos formas más comunes son
+  \textbf{prueba directa} o \textbf{por contraejemplo}.
 
-  De forma que es verdadera cuando coinciden $p$ y $q$, así:
-
-  \begin{equation}
-  p \leftrightarrow q \equiv (p \land q) \lor (\sim p \land \sim q)
-  \end{equation}
-
-  Por ello, para probar su validez se suele probar $p \to q$ y posterior
-  $q \to p$, pues los valores excluidos son $(V,F)$ y $(F,V)$ para cada
-  implicación, de modo que $p \leftrightarrow q$ excluye ambos.
-  Formalmente, probar que su caso de exclusión no puede ocurrir se deben
-  mostrar ambos.
-
-  De modo que los valores de exclusión son aquellos en los que el conector
-  es falso por definición semántica.
-
-  \subsection{Ejemplo: Triángulo Equilátero}
-
-  \begin{proposition}[title={Ángulos de 60° implica equilátero}]
-  Si el triángulo $ABC$ tiene 2 ángulos de $60°$ entonces es equilátero.
+  Para probar una proposición, se debe probar que el caso donde se define como $F$
+  no puede suceder, es decir, mostrar que los casos de exclusión no son válidos.
+  
+  \begin{proposition}
+    Si $n$ es par, entonces $n^2$ también es par
+    \begin{proof}
+      Sea $p$: "$n$ es par" y $q$: "$n^2$ es par". Se tiene $p \to q$.
+      Se prueba que $p \land \sim q$ no puede suceder, ie, que si $n$ es par, $n^2$ no puede ser impar.
+      
+      Sea $n = 2k$:
+      \begin{align}
+      n^2 &= (2k)^2 \\
+          &= 4k^2 \\
+          &= 2(2k)
+      \end{align}
+      
+      Por lo tanto $n^2$ es par, lo cual contradice $\sim q$. De esta forma, $p \land \sim q$
+      no puede ocurrir, luego $p \to q$ es una tautología. \qed
+    \end{proof}
   \end{proposition}
+  
+  
+  \begin{proposition}
+    Si el triángulo $ABC$ tiene 2 ángulos de $60°$ entonces es equilátero
 
-  \begin{proof}[title={Construcción directa}]
-  En un espacio euclídeo, todo triángulo tiene $180°$, de modo que el
-  tercer ángulo es de $60°$ pues:
-  \begin{align}
-  x + 2(60) &= 180 \\
-  x &= 60°
-  \end{align}
-  Luego, $ABC$ es equilátero. \qed
-  \end{proof}
-
-  \obs La demostración anterior muestra que tomando a $p$ como hipótesis,
-  $q$ es el resultado por la restricción del modelo (el espacio euclídeo
-  en este caso). De una forma indirecta se probó que $\sim(p \land \sim q)$
-  es verdad, es decir, $p \to q$.
-
-  Al probar que no puede pasar $p$ y $\sim q$ a la vez, se demuestra que
-  se excluye el único caso de exclusión semántico. Por esto en una
-  demostración, asumir $p$ y deducir $q$ es equivalente a probar que no
-  puede ocurrir el caso $p \land \sim q$.
-
-  \obs Si bien, en matemáticas no siempre las demostraciones usan estas
-  reglas lógicas, hay equivalencias muy útiles.
-
-  \subsection{Eliminación de la Implicación}
-
-  \begin{definition}[title={Eliminación de la implicación}]
+    \begin{proof}
+      \begin{block}
+        \item  En un espacio euclídeo, todo triángulo tiene $180°$, de modo que el tercer ángulo es $60°$ pues:
+          \begin{align}
+            x + 2(60) &= 180 \\
+            x &= 60°
+          \end{align}
+          Luego, $ABC$ es equilátero. \qed
+        
+        \item Si bien no se demuestra directamente la exclusión, se recurre a ella pues:
+          \begin{align}
+            \text{ABC tiene 2 ángulos de } 60° & \to \text{ABC es equilátero} \\
+            p & \to q
+          \end{align}
+      \end{block}
+    \end{proof}
+  \end{proposition}
+  
+  
+  Para este caso no se prueba $p \land \sim q$ directamente, sino que tomando $p$ como
+  hipótesis, el modelo (geometría euclídea) predice que $\sim q$ es imposible, de modo que
+  $p \land \sim q$ no puede ocurrir.
+  
+  Por ello, para probar la validez del bicondicional se suele probar $p \to q$ y posterior
+  $q \to p$, pues los valores excluidos son $(V,F)$ y $(F,V)$ para cada implicación, de modo
+  que $p \leftrightarrow q$ excluye ambos. Formalmente:
+  
   \begin{equation}
-  p \to q \equiv \sim p \lor q
+  p \leftrightarrow q \equiv \sim((\sim p \land q) \lor (p \land \sim q))
   \end{equation}
-  ya que su valor de exclusión es justo el mismo $(V, F)$, pues al
-  evaluar, la disyunción ambos serían falsos.
-  \end{definition}
+  
+  Nótese que se está aplicando la
+  \note[title=tautología como patrón]{ De esto se desprenden las reglas de inferencia.
+    Aplicar este patrón permite construir una cadena de verdades.
+  },
+  de forma que puede sustituir o simplificar proposiciones previamente probadas.
+  Este mecanismo fue usado por Euclides en sus libros "Elementos".
 
-  \subsection{Contraposición}
-
-  \begin{minipage}[t]{0.48\textwidth}
-  \begin{definition}[title={Contraposición}]
-  Se parece mucho a equivalencia: si se asume que $q$ es $F$, entonces
-  $p$ también debe serlo, pues la implicación excluye el caso en que $p$
-  es $V$ y $q$ es $F$.
+  \begin{definition}[title=Contraposición]
+  Si se asume que $q$ es $F$, entonces $p$ también debe serlo, puesto que $p \to q$
+  excluye el caso $p = V$ y $q = F$:
   \begin{equation}
   p \to q \equiv \sim q \to \sim p
   \end{equation}
   \end{definition}
-  \end{minipage}
-
-  \begin{minipage}[t]{0.48\textwidth}
+  
   \begin{tabular}{c|c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $\sim p$ & $\sim q$ & $\sim q \to \sim p$ \\
   \hline
@@ -230,124 +235,117 @@
   F & V & V & V & F & V \\
   F & F & V & V & V & V \\
   \end{tabular}
-  \end{minipage}
-
-  Para este punto, el cómo se aborda una proposición de equivalencia es
-  que en una demostración, se trata de probar que el caso de exclusión
-  efectivamente no puede ocurrir, es decir, la proposición deberá ser una
-  tautología para ser verdadera.
-
+  
   \subsection{Leyes de Morgan}
-
-  \begin{theorem}[title={Leyes de De Morgan}]
-  \begin{align}
-  \sim(p \land q) &\equiv \sim p \lor \sim q \\
-  \sim(p \lor q)  &\equiv \sim p \land \sim q
-  \end{align}
+  
+  Cuando una proposición se vuelve compleja, pueden aparecer casos en los que las negaciones
+  agrupan a una o varias proposiciones moleculares de modo que su analisis puede complicarse
+  puesto que se evalua todo el interior y finalmente se aplica la negacion. Sin embargo, veremos
+  que hay ocasiones en las que ese agrupamiento no presenta un beneficio directo. Para ello
+  tenemos disponibles algunas formas de expandir o distribuir esas negaciones.
+  
+  \begin{theorem}[title=Leyes de De Morgan]
+    \begin{align}
+      \sim(p \land q) &\equiv \sim p \lor \sim q \\
+      \sim(p \lor q)  &\equiv \sim p \land \sim q
+    \end{align}
   \end{theorem}
-
-  Para que no ocurra $p \land q$, al menos una debe ser $F$. Ambas deben
-  ser $F$ para que $p \lor q$ no se cumpla.
-
+  
+  Para que no ocurra $p \land q$, al menos una debe ser $F$.
+  Ambas deben ser $F$ para que $p \lor q$ no se cumpla.
+  
   \subsection{Formas Normales}
-
-  Algo que puede ayudarnos a verificar factibilidad es convertir una
-  proposición en su forma normal; esta es una forma estandarizada de
-  escribir proposiciones usando solo ciertos conectores.
-
-  \begin{definition}[title={Forma Normal Disyuntiva (FND)}]
-  Es una conjunción de disyunciones:
-  \begin{equation}
-  (p_1 \lor q_1) \land (p_2 \lor q_2) \land \cdots
-  \end{equation}
-  \end{definition}
-
-  \begin{definition}[title={Forma Normal Conjuntiva (FNC)}]
-  Es una disyunción de conjunciones:
-  \begin{equation}
-  (p_1 \land q_1) \lor (p_2 \land q_2) \lor \cdots
-  \end{equation}
-  \end{definition}
-
-  Toda proposición puede representarse por una FN. Para convertir una
-  proposición a una forma normal, se siguen estos 3 pasos:
-
+  
+  Algo que puede ayudarnos a verificar factibilidad es convertir una proposición en su
+  \textbf{forma normal}; esta es una forma estandarizada de escribir proposiciones usando
+  solo ciertos conectores. Toda proposición puede representarse por una FN.
+  
+  \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=FND — Forma Normal Disyuntiva]
+      Es una conjunción de disyunciones:
+      \begin{equation}
+        (p_1 \lor q_1) \land (p_2 \lor q_2) \land \cdots
+      \end{equation}
+    \end{definition}
+  \end{minipage}
+  
+  \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=FNC — Forma Normal Conjuntiva]
+      Es una disyunción de conjunciones:
+      \begin{equation}
+        (p_1 \land q_1) \lor (p_2 \land q_2) \lor \cdots
+      \end{equation}
+    \end{definition}
+  \end{minipage}
+  
+  Para convertir una proposición a una forma normal, se siguen estos 3 pasos:
+  
   \begin{enumerate}
-  \item Se eliminan las implicaciones.
-  \item Se expanden las negaciones usando las leyes de De Morgan, con la
-  finalidad de poder agrupar linealmente.
-  \item Se distribuyen los conectores.
+    \item Se eliminan las implicaciones.
+    \item Se expanden las negaciones usando las leyes de De Morgan, con la finalidad de
+    poder agrupar linealmente.
+    \item Se distribuyen los conectores.
   \end{enumerate}
-
-  Por ejemplo:
+  
+  Por ejemplo, para $p \to (q \land r)$:
   \begin{align}
-  p \to (q \land r) &\equiv \sim p \lor (q \land r) \\
-  \sim p \lor (q \land r) &\equiv (\sim p \lor q) \land (\sim p \lor r) \\
-  \therefore\quad p \to (q \land r) &\equiv (\sim p \lor q) \land (\sim p \lor r)
+    p \to (q \land r) &\equiv \sim p \lor (q \land r) \\
+                    &\equiv (\sim p \lor q) \land (\sim p \lor r)
   \end{align}
+  
+  \subsection{Reglas de Inferencia}
+  
+  Podemos simplificar la notación asignando nombres a ciertas proposiciones; estos son
+  conocidos como \textbf{reglas de inferencia}.
+  
+  % \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=Modus Ponens]
+    La restricción se propaga:
+    \begin{align}
+    &p \to q \nonumber\\
+    &p \nonumber\\
+    &\therefore\ q \nonumber
+    \end{align}
+    \end{definition}
+  % \end{minipage}
 
-  \subsection{Modos Clásicos}
+  % \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=Modus Tollens]
+    La restricción es $p \land \sim q$ y $\sim q = V$, no puede ocurrir $p = V$,
+    solo queda $\sim p$:
+    \begin{align}
+    &p \to q \nonumber\\
+    &\sim q \nonumber\\
+    &\therefore\ \sim p \nonumber
+    \end{align}
+    \end{definition}
+  % \end{minipage}
+  
+  % \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=Silogismo Hipotético]
+    Una composición de restricciones:
+    \begin{align}
+    &p \to q \nonumber\\
+    &q \to r \nonumber\\
+    &\therefore\ p \to r \nonumber
+    \end{align}
+    \end{definition}
+  % \end{minipage}
 
-  Podemos simplificar la notación asignando nombres a ciertas
-  proposiciones; estos son conocidos como los 4 modos clásicos.
-
-  \begin{definition}[title={Modus Ponens}]
-  La restricción se propaga. Estructura:
-  \begin{align}
-  &p \to q \\
-  &p \\
-  \hline
-  &\therefore q
-  \end{align}
-  \end{definition}
-
-  \begin{definition}[title={Modus Tollens}]
-  Ya que la restricción es $p \land \sim q$ y $\sim q = V$, no puede
-  ocurrir que $p = V$, de modo que solo queda $\sim p$. Estructura:
-  \begin{align}
-  &p \to q \\
-  &\sim q \\
-  \hline
-  &\therefore \sim p
-  \end{align}
-  \end{definition}
-
-  \begin{definition}[title={Silogismo Hipotético}]
-  Es básicamente una composición de restricciones. Estructura:
-  \begin{align}
-  &p \to q \\
-  &q \to r \\
-  \hline
-  &\therefore p \to r
-  \end{align}
-  \end{definition}
-
-  \begin{definition}[title={Silogismo Disyuntivo}]
-  Un \textit{o} excluyente. Estructura:
-  \begin{align}
-  &p \lor q \\
-  &\sim p \\
-  \hline
-  &\therefore q
-  \end{align}
-  \end{definition}
-
-  \subsection{Argumento Válido}
-
-  \begin{definition}[title={Argumento}]
-  Un argumento tiene la forma $(P_1, P_2, \ldots) \therefore q$, o
-  formalmente $(P_1 \land P_2 \land \cdots) \to q$, y diremos que es
-  válido si no existe una valuación donde las premisas son verdaderas y
-  la conclusión es falsa.
-  \end{definition}
-
-  Y aquí entra una aclaración muy importante: toda regla de inferencia se
-  puede justificar mostrando que determinada fórmula es una tautología.
-  Para ello, tome el \textit{modus ponens}:
-
-  Para verificarlo construimos la fórmula $((p \to q) \land p) \to q$.
-  Si esta expresión es una tautología, entonces la regla es válida.
-
+  % \begin{minipage}{0.45\textwidth}
+    \begin{definition}[title=Silogismo Disyuntivo]
+    Un \textit{o} excluyente:
+    \begin{align}
+    &p \lor q \nonumber\\
+    &\sim p \nonumber\\
+    &\therefore\ q \nonumber
+    \end{align}
+    \end{definition}
+  % \end{minipage}
+  
+  Toda regla de inferencia se puede justificar mostrando que determinada fórmula es una
+  tautología. Para verificar el modus ponens, construimos $((p \to q) \land p) \to q$:
+  
   \begin{tabular}{c|c|c|c|c}
   $p$ & $q$ & $p \to q$ & $(p \to q) \land p$ & $((p \to q) \land p) \to q$ \\
   \hline
@@ -356,20 +354,24 @@
   F & V & V & F & V \\
   F & F & V & F & V \\
   \end{tabular}
+  
+  De este modo, si tenemos $(((p \to q) \land (q \to r)) \land p) \to r$, podemos reemplazar
+  todo el primer bloque por $r$ sin perder verdad.
 
-  Esto a su vez es aplicar la tautología como patrón, de forma que su
-  notación nos permite reemplazar bloques completos con la hipótesis ya
-  probada. De este modo, si tenemos
-  $((p \to q) \land (q \to r)) \land p) \to r$, entonces podemos
-  reemplazar todo el primer bloque por $r$ sin perder verdad.
+  Es en este punto que podemos generalizar las proposiciones. Con esto podemos
+  definir cadenas de proposiciones llamadas argumentos.
 
-  \begin{definition}[title={Verdad bajo valuación}]
-  Decimos que una fórmula es verdad bajo una valuación $v$ si al
-  evaluarla con las reglas semánticas de los conectores el resultado es $V$.
+  \begin{definition}[title=Argumento]
+  Un argumento tiene la forma $(P_1, P_2, \ldots) \therefore q$, o formalmente
+  $(P_1 \land P_2 \land \cdots) \to q$. Diremos que es \textbf{válido} si no existe
+  una valuación donde las premisas son verdaderas y la conclusión es falsa.
+  \end{definition}
+  
+  \begin{definition}[title=Verdad bajo valuación]
+  Una fórmula es verdad bajo una valuación $v$ si al evaluarla con las reglas semánticas
+  de los conectores el resultado es $V$. Un argumento es válido si no existe una valuación
+  donde todas las premisas sean verdaderas y las conclusiones sean falsas.
   \end{definition}
 
-  \begin{definition}[title={Argumento válido}]
-  Un argumento es válido si no existe una valuación donde todas las
-  premisas sean verdaderas y las conclusiones sean falsas.
-  \end{definition}
 \end{document}
+
