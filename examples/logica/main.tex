@@ -21,7 +21,6 @@
       La molécula más simple, puesto que niega el valor de valuación de $p$.
     \end{definition}
   \end{minipage}
-
   \begin{minipage}{0.35\textwidth}
     \begin{tabular}{c|c}
       $p$ & $\sim p$ \\
@@ -41,7 +40,6 @@
       \end{equation}
     \end{definition}
   \end{minipage}
-
   \begin{minipage}{0.35\textwidth}
     \begin{tabular}{c|c|c}
       $p$ & $q$ & $p \land q$ \\
@@ -61,7 +59,6 @@
       \end{equation}
     \end{definition}
   \end{minipage}
-
   \begin{minipage}{0.35\textwidth}
     \begin{tabular}{c|c|c}
       $p$ & $q$ & $p \lor q$ \\
@@ -94,7 +91,7 @@
   Dicho de otra forma, si $p$ es falso, significa que la hipótesis no se cumple,
   por tanto no se considera el valor de $q$. La regla de exclusión dice:
   
-  \alert{No existe un caso en que $p$ sea $V$ y $q$ sea $F$}
+  \alert{No existe un caso en que p sea V y q sea F}
   
   \alert{Si no hay promesa, no hay incumplimiento}
   
@@ -268,7 +265,6 @@
       \end{equation}
     \end{definition}
   \end{minipage}
-  
   \begin{minipage}{0.45\textwidth}
     \begin{definition}[title=FNC — Forma Normal Conjuntiva]
       Es una disyunción de conjunciones:
@@ -298,7 +294,7 @@
   Podemos simplificar la notación asignando nombres a ciertas proposiciones; estos son
   conocidos como \textbf{reglas de inferencia}.
   
-  % \begin{minipage}{0.45\textwidth}
+  \begin{minipage}{0.45\textwidth}
     \begin{definition}[title=Modus Ponens]
     La restricción se propaga:
     \begin{align}
@@ -307,9 +303,8 @@
     &\therefore\ q \nonumber
     \end{align}
     \end{definition}
-  % \end{minipage}
-
-  % \begin{minipage}{0.45\textwidth}
+  \end{minipage}
+  \begin{minipage}{0.45\textwidth}
     \begin{definition}[title=Modus Tollens]
     La restricción es $p \land \sim q$ y $\sim q = V$, no puede ocurrir $p = V$,
     solo queda $\sim p$:
@@ -319,9 +314,9 @@
     &\therefore\ \sim p \nonumber
     \end{align}
     \end{definition}
-  % \end{minipage}
+  \end{minipage}
   
-  % \begin{minipage}{0.45\textwidth}
+  \begin{minipage}{0.45\textwidth}
     \begin{definition}[title=Silogismo Hipotético]
     Una composición de restricciones:
     \begin{align}
@@ -330,9 +325,8 @@
     &\therefore\ p \to r \nonumber
     \end{align}
     \end{definition}
-  % \end{minipage}
-
-  % \begin{minipage}{0.45\textwidth}
+  \end{minipage}
+  \begin{minipage}{0.45\textwidth}
     \begin{definition}[title=Silogismo Disyuntivo]
     Un \textit{o} excluyente:
     \begin{align}
@@ -341,7 +335,7 @@
     &\therefore\ q \nonumber
     \end{align}
     \end{definition}
-  % \end{minipage}
+  \end{minipage}
   
   Toda regla de inferencia se puede justificar mostrando que determinada fórmula es una
   tautología. Para verificar el modus ponens, construimos $((p \to q) \land p) \to q$:
