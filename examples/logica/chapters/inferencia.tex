@@ -1,0 +1,88 @@
+\chapter{ Reglas de inferencia }
+
+  \section{Modos Clásicos}
+
+  Podemos simplificar la notación asignando nombres a ciertas
+  proposiciones; estos son conocidos como los 4 modos clásicos.
+
+  \begin{definition}[title={Modus Ponens}]
+  La restricción se propaga. Estructura:
+  \begin{align}
+  &p \to q \\
+  &p \\
+  \hline
+  &\therefore q
+  \end{align}
+  \end{definition}
+
+  \begin{definition}[title={Modus Tollens}]
+  Ya que la restricción es $p \land \sim q$ y $\sim q = V$, no puede
+  ocurrir que $p = V$, de modo que solo queda $\sim p$. Estructura:
+  \begin{align}
+  &p \to q \\
+  &\sim q \\
+  \hline
+  &\therefore \sim p
+  \end{align}
+  \end{definition}
+
+  \begin{definition}[title={Silogismo Hipotético}]
+  Es básicamente una composición de restricciones. Estructura:
+  \begin{align}
+  &p \to q \\
+  &q \to r \\
+  \hline
+  &\therefore p \to r
+  \end{align}
+  \end{definition}
+
+  \begin{definition}[title={Silogismo Disyuntivo}]
+  Un \textit{o} excluyente. Estructura:
+  \begin{align}
+  &p \lor q \\
+  &\sim p \\
+  \hline
+  &\therefore q
+  \end{align}
+  \end{definition}
+
+  \section{Argumento Válido}
+
+  \begin{definition}[title={Argumento}]
+  Un argumento tiene la forma $(P_1, P_2, \ldots) \therefore q$, o
+  formalmente $(P_1 \land P_2 \land \cdots) \to q$, y diremos que es
+  válido si no existe una valuación donde las premisas son verdaderas y
+  la conclusión es falsa.
+  \end{definition}
+
+  Y aquí entra una aclaración muy importante: toda regla de inferencia se
+  puede justificar mostrando que determinada fórmula es una tautología.
+  Para ello, tome el \textit{modus ponens}:
+
+  Para verificarlo construimos la fórmula $((p \to q) \land p) \to q$.
+  Si esta expresión es una tautología, entonces la regla es válida.
+
+  \begin{tabular}{c|c|c|c|c}
+  $p$ & $q$ & $p \to q$ & $(p \to q) \land p$ & $((p \to q) \land p) \to q$ \\
+  \hline
+  V & V & V & V & V \\
+  V & F & F & F & V \\
+  F & V & V & F & V \\
+  F & F & V & F & V \\
+  \end{tabular}
+
+  Esto a su vez es aplicar la tautología como patrón, de forma que su
+  notación nos permite reemplazar bloques completos con la hipótesis ya
+  probada. De este modo, si tenemos
+  $((p \to q) \land (q \to r)) \land p) \to r$, entonces podemos
+  reemplazar todo el primer bloque por $r$ sin perder verdad.
+
+  \begin{definition}[title={Verdad bajo valuación}]
+  Decimos que una fórmula es verdad bajo una valuación $v$ si al
+  evaluarla con las reglas semánticas de los conectores el resultado es $V$.
+  \end{definition}
+
+  \begin{definition}[title={Argumento válido}]
+  Un argumento es válido si no existe una valuación donde todas las
+  premisas sean verdaderas y las conclusiones sean falsas.
+  \end{definition}

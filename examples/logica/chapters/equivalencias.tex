@@ -1,0 +1,156 @@
+\chapter{ Equivalencias }
+
+  \section{Bicondicional}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{definition}[title={Bicondicional}]
+  $p \leftrightarrow q$ es verdad cuando $p$ y $q$ tienen el mismo valor
+  de verdad en todas las interpretaciones, es decir:
+  \begin{equation}
+  p \leftrightarrow q \equiv (p \to q) \land (q \to p)
+  \end{equation}
+  \end{definition}
+  \end{minipage}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{c|c|c|c|c}
+  $p$ & $q$ & $p \to q$ & $q \to p$ & $(p \to q) \land (q \to p)$ \\
+  \hline
+  V & V & V & V & V \\
+  F & V & V & F & F \\
+  V & F & F & V & F \\
+  F & F & V & V & V \\
+  \end{tabular}
+  \end{minipage}
+
+  De forma que es verdadera cuando coinciden $p$ y $q$, así:
+
+  \begin{equation}
+  p \leftrightarrow q \equiv (p \land q) \lor (\sim p \land \sim q)
+  \end{equation}
+
+  Por ello, para probar su validez se suele probar $p \to q$ y posterior
+  $q \to p$, pues los valores excluidos son $(V,F)$ y $(F,V)$ para cada
+  implicación, de modo que $p \leftrightarrow q$ excluye ambos.
+  Formalmente, probar que su caso de exclusión no puede ocurrir se deben
+  mostrar ambos.
+
+  De modo que los valores de exclusión son aquellos en los que el conector
+  es falso por definición semántica.
+
+  \subsection{Ejemplo: Triángulo Equilátero}
+
+  \begin{proposition}[title={Ángulos de 60° implica equilátero}]
+  Si el triángulo $ABC$ tiene 2 ángulos de $60°$ entonces es equilátero.
+  \end{proposition}
+
+  \begin{proof}[title={Construcción directa}]
+  En un espacio euclídeo, todo triángulo tiene $180°$, de modo que el
+  tercer ángulo es de $60°$ pues:
+  \begin{align}
+  x + 2(60) &= 180 \\
+  x &= 60°
+  \end{align}
+  Luego, $ABC$ es equilátero. \qed
+  \end{proof}
+
+  \obs La demostración anterior muestra que tomando a $p$ como hipótesis,
+  $q$ es el resultado por la restricción del modelo (el espacio euclídeo
+  en este caso). De una forma indirecta se probó que $\sim(p \land \sim q)$
+  es verdad, es decir, $p \to q$.
+
+  Al probar que no puede pasar $p$ y $\sim q$ a la vez, se demuestra que
+  se excluye el único caso de exclusión semántico. Por esto en una
+  demostración, asumir $p$ y deducir $q$ es equivalente a probar que no
+  puede ocurrir el caso $p \land \sim q$.
+
+  \obs Si bien, en matemáticas no siempre las demostraciones usan estas
+  reglas lógicas, hay equivalencias muy útiles.
+
+  \section{Eliminación de la Implicación}
+
+  \begin{definition}[title={Eliminación de la implicación}]
+  \begin{equation}
+  p \to q \equiv \sim p \lor q
+  \end{equation}
+  ya que su valor de exclusión es justo el mismo $(V, F)$, pues al
+  evaluar, la disyunción ambos serían falsos.
+  \end{definition}
+
+  \section{Contraposición}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{definition}[title={Contraposición}]
+  Se parece mucho a equivalencia: si se asume que $q$ es $F$, entonces
+  $p$ también debe serlo, pues la implicación excluye el caso en que $p$
+  es $V$ y $q$ es $F$.
+  \begin{equation}
+  p \to q \equiv \sim q \to \sim p
+  \end{equation}
+  \end{definition}
+  \end{minipage}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{c|c|c|c|c|c}
+  $p$ & $q$ & $p \to q$ & $\sim p$ & $\sim q$ & $\sim q \to \sim p$ \\
+  \hline
+  V & V & V & F & F & V \\
+  V & F & F & F & V & F \\
+  F & V & V & V & F & V \\
+  F & F & V & V & V & V \\
+  \end{tabular}
+  \end{minipage}
+
+  Para este punto, el cómo se aborda una proposición de equivalencia es
+  que en una demostración, se trata de probar que el caso de exclusión
+  efectivamente no puede ocurrir, es decir, la proposición deberá ser una
+  tautología para ser verdadera.
+
+  \section{Leyes de De Morgan}
+
+  \begin{theorem}[title={Leyes de De Morgan}]
+  \begin{align}
+  \sim(p \land q) &\equiv \sim p \lor \sim q \\
+  \sim(p \lor q)  &\equiv \sim p \land \sim q
+  \end{align}
+  \end{theorem}
+
+  Para que no ocurra $p \land q$, al menos una debe ser $F$. Ambas deben
+  ser $F$ para que $p \lor q$ no se cumpla.
+
+  \section{Formas Normales}
+
+  Algo que puede ayudarnos a verificar factibilidad es convertir una
+  proposición en su forma normal; esta es una forma estandarizada de
+  escribir proposiciones usando solo ciertos conectores.
+
+  \begin{definition}[title={Forma Normal Disyuntiva (FND)}]
+  Es una conjunción de disyunciones:
+  \begin{equation}
+  (p_1 \lor q_1) \land (p_2 \lor q_2) \land \cdots
+  \end{equation}
+  \end{definition}
+
+  \begin{definition}[title={Forma Normal Conjuntiva (FNC)}]
+  Es una disyunción de conjunciones:
+  \begin{equation}
+  (p_1 \land q_1) \lor (p_2 \land q_2) \lor \cdots
+  \end{equation}
+  \end{definition}
+
+  Toda proposición puede representarse por una FN. Para convertir una
+  proposición a una forma normal, se siguen estos 3 pasos:
+
+  \begin{enumerate}
+  \item Se eliminan las implicaciones.
+  \item Se expanden las negaciones usando las leyes de De Morgan, con la
+  finalidad de poder agrupar linealmente.
+  \item Se distribuyen los conectores.
+  \end{enumerate}
+
+  Por ejemplo:
+  \begin{align}
+  p \to (q \land r) &\equiv \sim p \lor (q \land r) \\
+  \sim p \lor (q \land r) &\equiv (\sim p \lor q) \land (\sim p \lor r) \\
+  \therefore\quad p \to (q \land r) &\equiv (\sim p \lor q) \land (\sim p \lor r)
+  \end{align}

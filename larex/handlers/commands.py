@@ -109,17 +109,24 @@ def _register_heading(p, node: dict):
     counter = p.counters[name]
     counter.increase()
 
-    node['index'] = counter.get()
+    parts = [p.counters['chapter'].get()]
+    if level >= 1:
+        parts.append(p.counters['section'].get())
+    if level >= 2:
+        parts.append(p.counters['subsection'].get())
+    node['index'] = '.'.join(str(v) for v in parts)
+    title = ''.join(
+        item if isinstance(item, str) else ''
+        for item in node.get('content', [])
+    ).strip()
+    ref_key = f"{name}:{node['index']}"
+    p.refs[ref_key] = {'index': node['index'], 'label': title}
 
     if level == 0:
-        title = ''.join(
-            item if isinstance(item, str) else ''
-            for item in node.get('content', [])
-        )
         key = f"chapter:{counter.get()}"
         p.chapters[key] = {
-            'index': counter.get(),
-            'title': title.strip(),
+            'index': node['index'],
+            'label': title,
         }
 
 

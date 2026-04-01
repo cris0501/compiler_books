@@ -1,0 +1,43 @@
+\chapter{Inteligencia Artifical}
+
+Considero que integrar un chat con IA al que preguntarle cosas del contexto
+del libro puede ayudar mucho, estaria limitado poco mas del contexto, con un
+Fine Tuning podria ser muy bueno. Sin embargo, hay un par de detalles que
+debo solucionar antes y que no tenia contemplados
+
+\section{ Preparativos }
+
+Para que el bot pueda conocer el contexto, debe saber que tema estudias, debe
+tener nocion de la posicion del libro, sin embargo, no puedo medir segun cuanto
+scroll tiene su navegador porque si cambio de dispositivo, el scroll cambia
+y pierdo la referencia. La solucion que se me ocurre es que debe saber que
+capitulo, sección o sub sección estas leyendo y para eso, necesito referencias
+y estas se logran con un identificador (id) que solo existe para los capitulos.
+
+\subsection{ Contadores }
+
+Ya que los capitulos tienen un contador unico, una variable numerica que voy
+incrementando es suficiente, pero las subsecciones no tienen ese identificador
+por que no van numeradas. Poner otro contador no es la solucion completa porque
+incrementar el contador padre deberia reiniciar el contador hijo y este a su
+vez debe reiniciar a sus hijos.
+
+Como deben tener logica, deben ser objetos.
+
+\subsection{ La posicion }
+
+Ahora que ya hay contadores, ya identificamos elementos, entonces ahora podemos
+guardar la posicion en la que nos encontramos, un capitulo, una sección, etc.
+Aun no tengo un servicion de servidor activo porque incluir IA aun no lo
+requiere pero puedo retomar posicion de lectura en el dispositivo actual, ya
+es algo.
+
+\subsection{ IA }
+
+Ahora que ya se guarda la referencia de que estas leyendo, ahora toca integrar
+la IA, tal vez se llame M(ath) I(nteligence) A(rtificial) - MIA. Empezaré a
+entrenarla y establecer limites. Sin emabrgo, por mucho que esta función la
+logre integrar, me temo que liberarla a la comunidad de momento estaría fuera
+de mi alcancé pues mi servidor no cuenta con los recursos para tener una IA
+ejecutandose, alrededor de 50 estudiantes simultaneos podrian saturar el
+servicio y quizá no colapse pero se sentiria lento.

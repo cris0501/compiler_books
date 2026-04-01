@@ -1,0 +1,129 @@
+\chapter{Proposiciones}
+
+  Existen 2 tipos de proposiciones, atómicas y moleculares. Estas deben ser
+  fórmulas bien formadas, es decir, solo pueden tener un valor de verdad
+  asociado, y su enunciado no puede contener valores de verdad.
+
+  \section{Conectores}
+
+  En lógica, se definen conectores; estos representan un par ordenado de
+  valores asociados a la relación entre 2 proposiciones atómicas. Estas
+  definiciones indican qué casos deben cumplirse del enunciado, y estos
+  pares ordenados se pueden representar por valores en una tabla de verdad.
+
+  \subsection{Conjunción}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{definition}[title={Conjunción}]
+  El conector $p \land q$ solo permite el par ordenado $(V, V)$ y excluye
+  al resto.
+  \end{definition}
+  \end{minipage}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{c|c|c}
+  $p$ & $q$ & $p \land q$ \\
+  \hline
+  V & V & V \\
+  V & F & F \\
+  F & V & F \\
+  F & F & F \\
+  \end{tabular}
+  \end{minipage}
+
+  De este modo, podemos probar la conjunción como verdad por una prueba
+  directa. Para probar que es falsa, basta probar un contraejemplo:
+
+  \begin{align}
+  \sim p &\to \sim(p \land q) \\
+  \sim q &\to \sim(p \land q)
+  \end{align}
+
+  \subsection{Disyunción}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{definition}[title={Disyunción}]
+  Para el conector $p \lor q$ únicamente se excluye $(F, F)$.
+  \end{definition}
+  \end{minipage}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{c|c|c}
+  $p$ & $q$ & $p \lor q$ \\
+  \hline
+  V & V & V \\
+  V & F & V \\
+  F & V & V \\
+  F & F & F \\
+  \end{tabular}
+  \end{minipage}
+
+  Dado que la lógica no funciona por enumeración, la forma correcta es
+  por exclusión del contraejemplo, así basta probar que ocurre:
+
+  \begin{equation}
+  \sim p \land \sim q \equiv (F, F)
+  \end{equation}
+
+  \subsection{Implicación}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{definition}[title={Implicación}]
+  En lógica proposicional no se busca describir el mundo físico, es decir,
+  la lógica no entiende causalidad ni temporalidad, sino que son un
+  conjunto de reglas. Este conector no explica que si ocurre $p$ causa $q$,
+  no es que para que ocurra $q$ deba ocurrir $p$. No se evalúa de forma
+  secuencial, sino que cada uno tiene su valor. La única exclusión que
+  tiene es el caso $(V, F)$.
+  \end{definition}
+  \end{minipage}
+
+  \begin{minipage}[t]{0.48\textwidth}
+  \begin{tabular}{c|c|c}
+  $p$ & $q$ & $p \to q$ \\
+  \hline
+  V & V & V \\
+  V & F & F \\
+  F & V & V \\
+  F & F & V \\
+  \end{tabular}
+  \end{minipage}
+
+  Dicho de otra forma, si $p$ es falso, significa que la hipótesis no se
+  cumple, por tanto no hace falta evaluar el valor de $q$. La regla de
+  exclusión dice:
+
+  \alert{No existe un caso en que $p$ sea $V$ y $q$ sea $F$}
+
+  \alert{Si no hay promesa, no hay incumplimiento}
+
+  El caso $(F, F)$ puede parecer contraintuitivo; ambas falsas debería ser
+  falsa la proposición en general, pero esto no es así porque no se busca
+  reflejar o explicar una situación del mundo físico. Esta proposición
+  también se puede abordar como:
+
+  \begin{equation}
+  \sim(p \land \sim q) \equiv p \to q
+  \end{equation}
+
+  Para demostrar la identidad de dos proposiciones basta con ver sus
+  valores de verdad.
+
+  \begin{tabular}{c|c|c|c|c|c}
+  $p$ & $q$ & $p \to q$ & $\sim q$ & $p \land \sim q$ & $\sim(p \land \sim q)$ \\
+  \hline
+  V & V & V & F & F & V \\
+  V & F & F & V & V & F \\
+  F & V & V & F & F & V \\
+  F & F & V & V & F & V \\
+  \end{tabular}
+
+  \section{Contraejemplo}
+
+  Estas definiciones nos permiten identificar algunas estrategias para
+  demostrar proposiciones matemáticas. Para ello, basta probar, ya fuese
+  un \textit{contraejemplo} o una construcción directa.
+
+  \begin{definition}[title={Contraejemplo}]
+  Un contraejemplo es probar que alguna de las exclusiones puede ocurrir.
+  \end{definition}
