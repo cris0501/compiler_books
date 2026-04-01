@@ -7,6 +7,7 @@ Delega toda la lógica semántica a los handlers.
 import re
 
 from .tokens import tokenize, Token
+from .counter import Counter
 from .handlers import (
     handle_command, handle_begin, handle_end,
     handle_math, handle_item, handle_label, handle_ref,
@@ -25,7 +26,14 @@ class Parser:
         self.refs = {}
         self.label_counter = 0
         self.chapters = {}
-        self.chapter_counter = 0
+        chapter    = Counter()
+        section    = Counter(chapter)
+        subsection = Counter(section)
+        self.counters = {
+            'chapter':    chapter,
+            'section':    section,
+            'subsection': subsection,
+        }
 
     @property
     def frame(self):

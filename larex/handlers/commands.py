@@ -94,25 +94,33 @@ def _node(p, props: dict):
     for _ in range(props.get('args', 1)):
         consume_brace_block(p, node, 'content', inline_only=inline_only)
 
-    _register_chapter(p, node)
+    _register_heading(p, node)
 
 
-def _register_chapter(p, node: dict):
-    """Si el nodo es un heading level 0, registra el capitulo."""
-    if node.get('kind') != 'heading' or node.get('level') != 0:
+_HEADING_LEVELS = {0: 'chapter', 1: 'section', 2: 'subsection'}
+
+def _register_heading(p, node: dict):
+    """Registra headings y actualiza sus contadores."""
+    level = node.get('level')
+    if node.get('kind') != 'heading' or level not in _HEADING_LEVELS:
         return
 
-    p.chapter_counter += 1
-    title = ''.join(
-        item if isinstance(item, str) else ''
-        for item in node.get('content', [])
-    )
-    key = f"chapter:{p.chapter_counter}"
-    p.chapters[key] = {
-        'index': p.chapter_counter,
-        'title': title.strip(),
-    }
-    node['chapter_index'] = p.chapter_counter
+    name = _HEADING_LEVELS[level]
+    counter = p.counters[name]
+    counter.increase()
+
+    node['index'] = counter.get()
+
+    if level == 0:
+        title = ''.join(
+            item if isinstance(item, str) else ''
+            for item in node.get('content', [])
+        )
+        key = f"chapter:{counter.get()}"
+        p.chapters[key] = {
+            'index': counter.get(),
+            'title': title.strip(),
+        }
 
 
 
